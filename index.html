@@ -1,0 +1,4157 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex, notranslate, noodp">
+  <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex, max-snippet:0">
+  <meta name="bingbot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+  <meta name="baiduspider" content="noindex, nofollow">
+  <meta name="slurp" content="noindex, nofollow">
+  <meta name="duckduckbot" content="noindex, nofollow">
+  <meta name="yandex" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>慈心華德福高中 戶外裝備線上借還系統</title>
+  <style>
+    :root {
+      --primary-color: #2B4C3F;       /* 慈心森林綠 */
+      --primary-hover: #1E372D;
+      --primary-light: #EBF2ED;
+      --accent-orange: #E76F51;       /* 暖橘紅警示/提示 */
+      --accent-amber: #D4A373;        /* 溫暖木色 */
+      --accent-green: #2E7D32;
+      --bg-main: #F8F6F0;             /* 華德福米白底 */
+      --bg-card: #FFFFFF;
+      --text-main: #1A2E26;
+      --text-muted: #5C6B64;
+      --border-color: #E2DDD5;
+      --shadow-sm: 0 2px 6px rgba(0,0,0,0.04);
+      --shadow-md: 0 6px 16px rgba(43,76,63,0.08);
+      --radius-lg: 14px;
+      --radius-sm: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 頂部 Header */
+    header {
+      background: linear-gradient(135deg, var(--primary-color) 0%, #172B23 100%);
+      color: #FFFFFF;
+      padding: 24px 20px 16px;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+    }
+    .header-badge {
+      display: inline-block;
+      background-color: rgba(212, 163, 115, 0.25);
+      color: #F8F6F0;
+      padding: 3px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+      border: 1px solid rgba(212, 163, 115, 0.4);
+    }
+    .header-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .header-sub {
+      font-size: 0.92rem;
+      color: var(--accent-amber);
+      font-weight: 400;
+    }
+
+    /* 主導覽分頁列 */
+    .nav-bar {
+      display: flex;
+      justify-content: center;
+      background-color: #FFFFFF;
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav-btn {
+      padding: 14px 28px;
+      background: none;
+      border: none;
+      font-size: 0.98rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+    .nav-btn.active {
+      color: var(--primary-color);
+    }
+    .nav-btn.active::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 15%;
+      width: 70%;
+      height: 3px;
+      background-color: var(--primary-color);
+      border-radius: 3px 3px 0 0;
+    }
+
+    /* 頁面主容器 */
+    .container {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 24px 16px 100px;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* 華德福裝備公約看板 */
+    .pact-banner {
+      background-color: #FFFFFF;
+      border-left: 5px solid var(--accent-orange);
+      border-radius: var(--radius-sm);
+      padding: 14px 18px;
+      margin-bottom: 22px;
+      box-shadow: var(--shadow-sm);
+      border-top: 1px solid var(--border-color);
+      border-right: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+    }
+    .pact-banner h4 {
+      color: var(--accent-orange);
+      font-size: 0.96rem;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+    .pact-banner p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* 篩選與搜尋面板 */
+    .filter-panel {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .category-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .cat-btn {
+      background-color: var(--bg-main);
+      border: 1px solid var(--border-color);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .cat-btn.active, .cat-btn:hover {
+      background-color: var(--primary-color);
+      color: #FFFFFF;
+      border-color: var(--primary-color);
+    }
+    .search-box {
+      position: relative;
+      min-width: 220px;
+      flex: 1;
+      max-width: 320px;
+    }
+    .search-input {
+      width: 100%;
+      padding: 8px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      font-size: 0.88rem;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      outline: none;
+    }
+    .search-input:focus {
+      border-color: var(--primary-color);
+      background-color: #FFFFFF;
+    }
+
+    /* 裝備卡片網格 */
+    .equipment-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+    .eq-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .eq-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .eq-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .eq-category {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background-color: var(--bg-main);
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+    .stock-badge {
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 12px;
+    }
+    .stock-avail {
+      background-color: #E8F5E9;
+      color: var(--accent-green);
+    }
+    .stock-empty {
+      background-color: #FFEBEE;
+      color: #C62828;
+    }
+    .stock-restricted {
+      background-color: #FFF3E0;
+      color: #E65100;
+    }
+
+    .eq-title {
+      font-size: 1.18rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin-bottom: 6px;
+    }
+    .eq-spec {
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      white-space: pre-line;
+      line-height: 1.45;
+    }
+    
+    .btn-info-link {
+      display: inline-flex;
+      align-items: center;
+      background-color: var(--primary-light);
+      color: var(--primary-color);
+      border: 1px solid rgba(43, 76, 63, 0.25);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 4px;
+      margin-bottom: 12px;
+      transition: all 0.2s ease;
+      width: fit-content;
+    }
+    .btn-info-link:hover {
+      background-color: var(--primary-color);
+      color: #FFFFFF;
+      border-color: var(--primary-color);
+    }
+
+    /* 全域預計借還時段選擇面板（偏好 1） */
+    .date-range-panel {
+      background: #FFFFFF;
+      border: 1px solid var(--border-color);
+      border-top: 4px solid var(--primary-color);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+    .date-range-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .date-range-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: var(--primary-light);
+      color: var(--primary-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+    .date-range-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .date-range-desc {
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .date-inputs-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .date-input-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-main);
+      padding: 6px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .date-input-group:focus-within {
+      border-color: var(--primary-color);
+      background: #FFFFFF;
+    }
+    .date-input-group label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .date-input-group input[type="date"] {
+      border: none;
+      background: transparent;
+      font-size: 0.92rem;
+      color: var(--text-main);
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .date-arrow-separator {
+      color: var(--accent-amber);
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+    .range-duration-badge {
+      background: #FEF3E2;
+      color: #B45309;
+      border: 1px solid #FDE68A;
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    /* 檔期查詢按鈕與時程列表 */
+    .btn-schedule-link {
+      background-color: #F4F7F5;
+      color: var(--primary-color);
+      border: 1px solid rgba(43, 76, 63, 0.25);
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    .btn-schedule-link:hover {
+      background-color: var(--primary-color);
+      color: #FFFFFF;
+    }
+    .schedule-order-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-color);
+      background: #FFFFFF;
+      transition: background 0.15s;
+    }
+    .schedule-order-row:last-child {
+      border-bottom: none;
+    }
+    .schedule-order-row.overlap {
+      background: #FFFBF7;
+      border-left: 4px solid var(--accent-orange);
+    }
+    .status-tag {
+      font-size: 0.76rem;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 700;
+      display: inline-block;
+    }
+    .status-tag-borrowed {
+      background: #FEF3C7;
+      color: #92400E;
+    }
+    .status-tag-reserved {
+      background: #E0E7FF;
+      color: #3730A3;
+    }
+
+    /* 裝備借用協調申請相關樣式 */
+    .btn-coord-link {
+      background-color: #FEF3EE;
+      color: #C0392B;
+      border: 1px solid #FADBD8;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    .btn-coord-link:hover {
+      background-color: #E76F51;
+      color: #FFFFFF;
+      border-color: #E76F51;
+    }
+    .priority-badge-high {
+      background: #FDEDEC;
+      color: #C0392B;
+      border: 1px solid #F5B7B1;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      display: inline-block;
+    }
+    .priority-badge-medium {
+      background: #EBF5FB;
+      color: #2980B9;
+      border: 1px solid #AED6F1;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      display: inline-block;
+    }
+    .priority-badge-low {
+      background: #FEF9F3;
+      color: #B45309;
+      border: 1px solid #FDE68A;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      display: inline-block;
+    }
+    .modal-detail-section {
+      margin-bottom: 16px;
+    }
+    .modal-detail-section:last-child {
+      margin-bottom: 0;
+    }
+    .modal-section-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .modal-section-content {
+      font-size: 0.88rem;
+      color: var(--text-main);
+      white-space: pre-line;
+      line-height: 1.5;
+      background-color: var(--bg-main);
+      padding: 10px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+    }
+    .modal-icon {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+    }
+
+    .eq-note {
+      background-color: #FFF9F5;
+      border-left: 3px solid var(--accent-amber);
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 0.82rem;
+      color: #7A4B20;
+      margin-bottom: 14px;
+      white-space: pre-line;
+    }
+
+    /* 數量選擇與卡片頁腳 */
+    .eq-footer {
+      border-top: 1px solid var(--border-color);
+      padding-top: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .qty-control {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .qty-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-main);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .qty-btn:hover:not(:disabled) {
+      background-color: var(--primary-color);
+      color: #FFFFFF;
+      border-color: var(--primary-color);
+    }
+    .qty-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .qty-number {
+      font-size: 1rem;
+      font-weight: 700;
+      min-width: 32px;
+      text-align: center;
+    }
+
+    /* 底部懸浮購物車條 */
+    .cart-bar {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 32px);
+      max-width: 800px;
+      background: linear-gradient(135deg, var(--primary-color) 0%, #1B352B 100%);
+      color: #FFFFFF;
+      padding: 14px 22px;
+      border-radius: 30px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 200;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .cart-bar.hidden {
+      transform: translate(-50%, 100px);
+      opacity: 0;
+      pointer-events: none;
+    }
+    .cart-info-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+    .cart-info-sub {
+      font-size: 0.84rem;
+      color: var(--accent-amber);
+    }
+    .cart-submit-btn {
+      background-color: var(--accent-orange);
+      color: #FFFFFF;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 20px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(231,111,81,0.3);
+      transition: transform 0.15s, background-color 0.2s;
+    }
+    .cart-submit-btn:hover {
+      background-color: #D65A3C;
+      transform: translateY(-1px);
+    }
+
+    /* 彈窗樣式 (Modal) */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 300;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    .modal-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-card {
+      background-color: #FFFFFF;
+      border-radius: var(--radius-lg);
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-header {
+      background-color: var(--primary-color);
+      color: #FFFFFF;
+      padding: 18px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+    .modal-close-btn {
+      background: none;
+      border: none;
+      color: #FFFFFF;
+      font-size: 1.5rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .modal-body {
+      padding: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+    .form-input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      font-size: 0.95rem;
+      outline: none;
+    }
+    .form-input:focus {
+      border-color: var(--primary-color);
+    }
+    .email-input-group {
+      display: flex;
+      align-items: stretch;
+      width: 100%;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      background-color: #FFFFFF;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      overflow: hidden;
+    }
+    .email-input-group:focus-within {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 1px var(--primary-color);
+    }
+    .email-prefix-input {
+      flex: 1;
+      min-width: 0;
+      padding: 10px 14px;
+      border: none;
+      outline: none;
+      font-size: 0.95rem;
+      background: transparent;
+      color: var(--text-main);
+    }
+    .email-suffix {
+      display: inline-flex;
+      align-items: center;
+      padding: 0 12px;
+      background-color: #F4F6F5;
+      color: var(--primary-color);
+      font-weight: 600;
+      font-size: 0.88rem;
+      border-left: 1px solid var(--border-color);
+      user-select: none;
+      white-space: nowrap;
+    }
+    @media (max-width: 600px) {
+      .form-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .email-suffix {
+        padding: 0 8px;
+        font-size: 0.8rem;
+      }
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    /* 借用品項簡表 */
+    .selected-items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 18px;
+      font-size: 0.88rem;
+    }
+    .selected-items-table th {
+      background-color: var(--bg-main);
+      padding: 8px 10px;
+      text-align: left;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+    }
+    .selected-items-table td {
+      padding: 8px 10px;
+      border: 1px solid var(--border-color);
+    }
+
+    /* 公約勾選方塊 */
+    .agreement-box {
+      background-color: var(--bg-main);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      margin-bottom: 20px;
+    }
+    .checkbox-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 0.85rem;
+      line-height: 1.45;
+      margin-bottom: 8px;
+      cursor: pointer;
+    }
+    .checkbox-label:last-child {
+      margin-bottom: 0;
+    }
+    .checkbox-label input {
+      margin-top: 3px;
+    }
+
+    /* 管理後台區塊 */
+    .admin-container {
+      background-color: #FFFFFF;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+    .order-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+      font-size: 0.9rem;
+    }
+    .order-table th {
+      background-color: var(--primary-color);
+      color: #FFFFFF;
+      padding: 10px 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+    .order-table td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: top;
+    }
+    .status-pill {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 10px;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+    .status-borrowed { background-color: #FFF3E0; color: #E65100; }
+    .status-returned { background-color: #E8F5E9; color: #2E7D32; }
+
+    /* 按鈕共用 */
+    .btn-action {
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: none;
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-return { background-color: var(--accent-orange); color: #FFFFFF; }
+    .btn-print { background-color: var(--primary-color); color: #FFFFFF; }
+    .btn-secondary { background-color: var(--border-color); color: var(--text-main); }
+
+    /* ============================================================
+       A4 列印專用排版 (Print Layout)
+       ============================================================ */
+    .print-layout {
+      display: none;
+      background-color: #FFFFFF;
+      max-width: 860px;
+      margin: 24px auto;
+      padding: 28px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      border-radius: var(--radius-sm);
+    }
+    @media print {
+      body {
+        background-color: #FFFFFF !important;
+        color: #000000 !important;
+      }
+      header, .nav-bar, .container, .cart-bar, .modal-overlay, #app-view, .no-print {
+        display: none !important;
+      }
+      .print-layout {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+      }
+      .print-table tr, .print-sign-box {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+      @page {
+        size: A4 portrait;
+        margin: 10mm;
+      }
+    }
+
+    .print-header {
+      text-align: center;
+      border-bottom: 2px solid #000000;
+      padding-bottom: 10px;
+      margin-bottom: 14px;
+    }
+    .print-header h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .print-header p {
+      font-size: 0.9rem;
+    }
+    .print-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      font-size: 0.9rem;
+      margin-bottom: 14px;
+      padding: 8px;
+      border: 1px solid #CCCCCC;
+    }
+    .print-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      margin-bottom: 16px;
+    }
+    .print-table th, .print-table td {
+      border: 1px solid #333333;
+      padding: 6px 8px;
+      vertical-align: top;
+      line-height: 1.4;
+    }
+    .print-table th {
+      background-color: #F0F0F0;
+      font-weight: 700;
+      text-align: center;
+    }
+    .print-sign-box {
+      border: 1px solid #333333;
+      padding: 12px;
+      margin-top: 14px;
+      font-size: 0.86rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .sign-row {
+      margin-top: 25px;
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+
+  <!-- 頂部標題區 -->
+  <header>
+    <div class="header-badge">慈心華德福高中 · 戶外探索與山野教育</div>
+    <div class="header-title">學校戶外裝備線上借還系統</div>
+    <div class="header-sub">即時庫存查詢 ｜ 自主線上借用 ｜ A4 出庫驗收檢核單 ｜ 歸還點收</div>
+    <div style="margin-top: 12px;">
+      <button type="button" class="header-guide-pill" onclick="openWelcomeGuide()" style="background: linear-gradient(135deg, #E76F51 0%, #D4A373 100%); border: 2px solid rgba(255,255,255,0.7); color: #FFFFFF; padding: 7px 24px; border-radius: 25px; font-size: 0.92rem; font-weight: 700; cursor: pointer; transition: all 0.25s; box-shadow: 0 4px 16px rgba(231,111,81,0.45); letter-spacing: 0.5px;" onmouseover="this.style.transform='scale(1.03)'; this.style.boxShadow='0 6px 20px rgba(231,111,81,0.6)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 4px 16px rgba(231,111,81,0.45)';">
+        第一次使用？點此開啟 3 步驟新手上手指南
+      </button>
+    </div>
+  </header>
+
+  <!-- 導覽分頁列 -->
+  <div class="nav-bar">
+    <button class="nav-btn active" id="btn-tab-borrow" onclick="switchTab('borrow')">裝備線上借用</button>
+    <button class="nav-btn" id="btn-tab-lookup" onclick="openLookupModal()">查詢 / 修改借用單</button>
+    <button class="nav-btn" id="btn-tab-admin" onclick="switchTab('admin')">裝備歸還與管理 (後台)</button>
+  </div>
+
+  <!-- 主要內容區 -->
+  <div class="container" id="app-view">
+
+    <!-- 頁面一：前台借用檢視 -->
+    <div id="view-borrow">
+      <!-- 編輯模式專用工作區 (Edit Mode Container) -->
+      <div id="edit-mode-container" style="display: none; margin-bottom: 24px;">
+        <!-- 1. 頂部狀態橫幅 -->
+        <div style="background: var(--primary-color); color: #FFFFFF; padding: 14px 20px; border-radius: var(--radius-sm) var(--radius-sm) 0 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div style="font-weight: 600; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <span style="background: var(--accent-amber); color: #1A2E26; font-size: 0.8rem; padding: 2px 10px; border-radius: 12px; font-weight: 700;">編輯模式</span>
+            正在修改借用單：<strong id="edit-banner-order-id" style="text-decoration: underline; color: #F8F6F0;"></strong>
+            <span style="font-size: 0.9rem; opacity: 0.9;">（借用人：<span id="edit-banner-borrower"></span>）</span>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button type="button" class="btn-action btn-return" style="padding: 8px 18px; font-size: 0.9rem;" onclick="openBorrowModal()">確認修改並更新借用單</button>
+            <button type="button" class="btn-action" style="background: rgba(255,255,255,0.2); color: #FFFFFF; border: 1px solid rgba(255,255,255,0.4); padding: 8px 14px; font-size: 0.85rem;" onclick="cancelEditMode()">放棄修改</button>
+          </div>
+        </div>
+
+        <!-- 2. 操作指引卡片 (清晰三步驟) -->
+        <div style="background: #FFFDF9; border-left: 4px solid var(--accent-amber); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 14px 18px; font-size: 0.88rem; line-height: 1.6; color: var(--text-main);">
+          <div style="font-weight: 700; color: var(--primary-color); margin-bottom: 8px; font-size: 0.95rem;">
+            戶外裝備修改操作指引：
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 10px;">
+            <div style="background: #FEF9F3; border: 1px solid #EAD8C3; border-top: 3px solid #D4A373; border-radius: 8px; padding: 12px 14px; box-shadow: 0 2px 6px rgba(212, 163, 115, 0.12);">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <span style="background: #D4A373; color: #FFFFFF; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; display: inline-block;">步驟 1</span>
+                <strong style="color: #7A4B20; font-size: 0.92rem;">調整已借裝備數量</strong>
+              </div>
+              <div style="color: #5C4A3A; font-size: 0.84rem; line-height: 1.5;">
+                在下方「目前借用品項」清單中，直接點擊 <strong>「＋」增加</strong> 或 <strong>「－」減少</strong> 數量；若不需要，點擊 <strong>「移除」</strong> 即可退回庫存。
+              </div>
+            </div>
+            <div style="background: #F2F8F4; border: 1px solid #CDE5D5; border-top: 3px solid #2B4C3F; border-radius: 8px; padding: 12px 14px; box-shadow: 0 2px 6px rgba(43, 76, 63, 0.12);">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <span style="background: #2B4C3F; color: #FFFFFF; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; display: inline-block;">步驟 2</span>
+                <strong style="color: #1E372D; font-size: 0.92rem;">追加借用新裝備</strong>
+              </div>
+              <div style="color: #2D483E; font-size: 0.84rem; line-height: 1.5;">
+                若需加借其他裝備，可直接在下方裝備卡片清單中挑選，點擊「＋」即可加入借用單。
+              </div>
+            </div>
+            <div style="background: #FDF5F2; border: 1px solid #F6D6CC; border-top: 3px solid #E76F51; border-radius: 8px; padding: 12px 14px; box-shadow: 0 2px 6px rgba(231, 111, 81, 0.12);">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                <span style="background: #E76F51; color: #FFFFFF; font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; display: inline-block;">步驟 3</span>
+                <strong style="color: #A33A20; font-size: 0.92rem;">確認修改並送出</strong>
+              </div>
+              <div style="color: #633327; font-size: 0.84rem; line-height: 1.5;">
+                調整完畢後，點擊右上方或底部的 <strong>「確認修改並更新借用單」</strong>，系統將即時扣補庫存並重發確認信。
+              </div>
+            </div>
+          </div>
+          <!-- 延後歸還 / 陰乾晾曬專用提示 -->
+          <div style="margin-top: 14px; background: #FFF9E6; border: 1px solid #FFE082; border-left: 4px solid #F59E0B; border-radius: 6px; padding: 12px 16px; font-size: 0.85rem; color: #6D4C41; line-height: 1.6;">
+            <strong style="color: #B45309; font-size: 0.88rem;">延後歸還操作指引（陰乾晾曬或行程調整）：</strong><br>
+            • 若活動時程延後或因天候潮濕裝備<strong>陰乾晾曬中</strong>尚未完全乾燥（符合慈心防霉鐵則），請直接在下方<strong>「預計借還時段與延期調整」</strong>面板調整「歸還日」，或點擊<strong>「＋ 延長 2 天」</strong>快捷按鈕。<br>
+            • 送出修改後，系統將即時進行全校檔期防撞檢查；若無衝突將自動核准更新，若與後續班級高山野外活動衝突將即時提示。亦可在送出表單時於備註欄註明「陰乾晾曬中」與晾曬地點。
+          </div>
+        </div>
+
+        <!-- 3. 預計借還時段與延期調整面板 (Edit Mode Date & Quick Extension) -->
+        <div style="background: #FFFFFF; border-left: 4px solid var(--primary-color); border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 16px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.15rem;">📅</span>
+              <strong style="color: var(--primary-color); font-size: 1rem;">預計借還時段與延期調整</strong>
+              <span id="edit-mode-range-badge" style="background: var(--primary-color); color: #FFFFFF; font-size: 0.8rem; padding: 2px 10px; border-radius: 12px; font-weight: 600;">共 4 天</span>
+            </div>
+            <div style="font-size: 0.84rem; color: var(--text-muted);">
+              若裝備陰乾通風中或行程延後，可在此調整歸還日或點擊快捷按鈕
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 14px; background: #FFFDF9; padding: 12px 16px; border-radius: 8px; border: 1px solid #EAD8C3;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <label for="edit-mode-borrow-date" style="font-weight: 600; font-size: 0.88rem; color: var(--text-main);">借出日：</label>
+              <input type="date" id="edit-mode-borrow-date" style="padding: 6px 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.9rem;" onchange="handleEditModeDateChange()">
+            </div>
+            <span style="color: var(--text-muted); font-weight: bold;">➔</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <label for="edit-mode-return-date" style="font-weight: 600; font-size: 0.88rem; color: var(--text-main);">歸還日：</label>
+              <input type="date" id="edit-mode-return-date" style="padding: 6px 10px; border: 2px solid #D4A373; border-radius: 4px; font-size: 0.9rem; font-weight: 700; color: #7A4B20; background: #FFFFFF;" onchange="handleEditModeDateChange()">
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-left: auto;">
+              <span style="font-size: 0.82rem; color: #7A4B20; font-weight: 600;">快捷延長：</span>
+              <button type="button" class="btn-action" style="background: #F2F8F4; color: #2B4C3F; border: 1px solid #CDE5D5; padding: 6px 12px; font-size: 0.84rem; font-weight: 600;" onclick="quickExtendReturnDate(1)">＋ 延長 1 天</button>
+              <button type="button" class="btn-action" style="background: #FFF9E6; color: #B45309; border: 1px solid #FFE082; padding: 6px 12px; font-size: 0.84rem; font-weight: 700;" onclick="quickExtendReturnDate(2)">＋ 延長 2 天</button>
+              <button type="button" class="btn-action" style="background: #FDF5F2; color: #E76F51; border: 1px solid #F6D6CC; padding: 6px 12px; font-size: 0.84rem; font-weight: 600;" onclick="quickExtendReturnDate(3)">＋ 延長 3 天</button>
+            </div>
+          </div>
+          <div id="edit-mode-extend-hint" style="display: none; margin-top: 8px; padding: 6px 12px; background: #E8F5E9; border-radius: 4px; font-size: 0.84rem; color: #2E7D32; font-weight: 600;"></div>
+        </div>
+
+        <!-- 4. 目前借用品項快速調整面板 -->
+        <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 var(--radius-sm) var(--radius-sm); padding: 16px 20px; box-shadow: var(--shadow-sm);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; gap: 8px;">
+            <div style="font-weight: 700; color: var(--primary-color); font-size: 0.95rem;">
+              目前借用中的裝備清單（共 <span id="edit-items-count" style="color: var(--accent-orange);">0</span> 項品項）
+            </div>
+            <div style="font-size: 0.82rem; color: var(--text-muted);">
+              可直接在此增減數量或移除，無須滑動至下方卡片尋找
+            </div>
+          </div>
+
+          <div id="edit-items-table-container">
+            <!-- 動態渲染目前已選裝備清單 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 頂部預計借還時段選擇面板（偏好 1：先選時段再挑裝備） -->
+      <div class="date-range-panel" id="global-date-panel">
+        <div class="date-range-header">
+          <div class="date-range-icon">📅</div>
+          <div>
+            <div class="date-range-title">
+              預計出隊借還時段
+              <span class="range-duration-badge" id="global-range-badge">共 4 天</span>
+            </div>
+            <div class="date-range-desc">
+              系統已為您動態計算該時段各裝備可用額度（無縫銜接：今日歸還、隔日即可由下一位老師借用）。
+            </div>
+          </div>
+        </div>
+        <div class="date-inputs-wrap">
+          <div class="date-input-group">
+            <label for="global-borrow-date">借出日</label>
+            <input type="date" id="global-borrow-date" onchange="handleGlobalDateChange()">
+          </div>
+          <span class="date-arrow-separator">➔</span>
+          <div class="date-input-group">
+            <label for="global-return-date">歸還日</label>
+            <input type="date" id="global-return-date" onchange="handleGlobalDateChange()">
+          </div>
+          <button type="button" class="btn-coord-link" style="padding: 7px 14px; font-size: 0.86rem;" onclick="openCoordinationModal()">
+            🤝 裝備協調申請
+          </button>
+        </div>
+      </div>
+
+      <!-- 篩選列 -->
+      <div class="filter-panel">
+        <div class="category-pills" id="category-container">
+          <button class="cat-btn active" onclick="filterCategory('all')">全部分類 (29)</button>
+          <button class="cat-btn" onclick="filterCategory('炊事裝備')">炊事裝備 (12)</button>
+          <button class="cat-btn" onclick="filterCategory('睡眠裝備')">睡眠裝備 (13)</button>
+          <button class="cat-btn" onclick="filterCategory('飲水裝備')">飲水裝備 (3)</button>
+          <button class="cat-btn" onclick="filterCategory('導航裝備')">導航裝備 (1)</button>
+        </div>
+        <div class="search-box">
+          <input type="text" class="search-input" id="search-input" placeholder="搜尋裝備名稱、編號..." oninput="handleSearch()">
+        </div>
+      </div>
+
+      <!-- 裝備卡片清單網格 -->
+      <div class="equipment-grid" id="equipment-grid">
+        <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: var(--text-muted);">
+          正在載入最新裝備庫存資料...
+        </div>
+      </div>
+    </div>
+
+    <!-- 頁面二：後台管理與歸還檢視 -->
+    <div id="view-admin" style="display: none;">
+      <div class="admin-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h2 style="color: var(--primary-color);" id="admin-header-title">裝備借出與歸還點收台</h2>
+            <p style="font-size: 0.88rem; color: var(--text-muted);" id="admin-header-desc">檢視目前借出與預約中的裝備訂單，實體清點完成後點選「確認歸還」，庫存即時自動回補。</p>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn-action btn-secondary" style="background: #EBF2ED; color: var(--primary-color); border: 1px solid var(--primary-color);" onclick="checkRemindersNow()">檢查逾期並寄信通報</button>
+            <button class="btn-action btn-secondary" style="background: #EBF2ED; color: var(--primary-color); border: 1px solid var(--primary-color);" onclick="setupDailyTrigger()">每日定時巡檢排程</button>
+            <button class="btn-action btn-secondary" onclick="refreshCurrentAdminTab()">重新整理清單</button>
+            <button class="btn-action btn-secondary" style="background: #E2DDD5;" onclick="adminLogout()">登出後台</button>
+          </div>
+        </div>
+
+        <!-- 後台子分頁切換按鈕 -->
+        <div style="display: flex; gap: 8px; margin-bottom: 18px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px;">
+          <button type="button" class="btn-action active" id="admin-subtab-orders-btn" style="background: var(--primary-color); color: #FFFFFF;" onclick="switchAdminSubTab('orders')">
+            📦 借出與歸還點收
+          </button>
+          <button type="button" class="btn-action" id="admin-subtab-coord-btn" style="background: var(--bg-main); color: var(--text-main); border: 1px solid var(--border-color);" onclick="switchAdminSubTab('coord')">
+            🤝 裝備協調申請匣 (<span id="admin-coord-count">0</span>)
+          </button>
+        </div>
+
+        <!-- 子分頁 1：借用訂單列表 -->
+        <div id="admin-orders-container">
+          <div id="admin-orders-list">
+            <div style="text-align: center; padding: 30px; color: var(--text-muted);">
+              正在載入借用訂單...
+            </div>
+          </div>
+        </div>
+
+        <!-- 子分頁 2：裝備協調申請匣 -->
+        <div id="admin-coord-container" style="display: none;">
+          <div id="admin-coord-list">
+            <div style="text-align: center; padding: 30px; color: var(--text-muted);">
+              正在載入協調申請...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 底部懸浮購物車列 -->
+  <div class="cart-bar hidden" id="cart-bar">
+    <div>
+      <div class="cart-info-title" id="cart-summary-text">已選取 0 項裝備（共 0 件）</div>
+      <div class="cart-info-sub">點擊右側按鈕填寫借用人與活動日期</div>
+    </div>
+    <button class="cart-submit-btn" onclick="openBorrowModal()">確認清單與填單</button>
+  </div>
+
+  
+  <!-- 裝備功能介紹彈跳視窗 (Modal) -->
+  <div class="modal-overlay" id="eq-detail-modal">
+    <div class="modal-card" style="max-width: 640px;">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" id="modal-eq-title">裝備功能介紹</div>
+          <div style="font-size: 0.85rem; color: var(--accent-amber); margin-top: 3px;" id="modal-eq-sub">類別 · 代碼</div>
+        </div>
+        <button class="modal-close-btn" onclick="closeEquipmentModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-eq-body" style="max-height: 70vh; overflow-y: auto;">
+        <!-- 動態填入裝備詳細內容 -->
+      </div>
+      <div style="padding: 14px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; background-color: var(--bg-main); border-radius: 0 0 var(--radius-lg) var(--radius-lg);">
+        <button class="btn-action btn-secondary" style="padding: 8px 22px; font-size: 0.9rem;" onclick="closeEquipmentModal()">關閉視窗</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 裝備檔期時程查詢彈窗 (Modal) -->
+  <div class="modal-overlay" id="modal-schedule">
+    <div class="modal-card" style="max-width: 640px;">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title" id="modal-sched-title">裝備檔期時程表</div>
+          <div style="font-size: 0.85rem; color: var(--accent-amber); margin-top: 3px;" id="modal-sched-sub">代碼 · 總儲備量</div>
+        </div>
+        <button class="modal-close-btn" onclick="closeScheduleModal()">&times;</button>
+      </div>
+      <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+        <!-- 當前查詢時段狀態摘要 -->
+        <div style="background: #F8FBF8; border: 1px solid #C8E6C9; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <div style="font-size: 0.84rem; color: var(--text-muted);">目前您選取的預計借還時段：</div>
+            <div style="font-weight: 700; color: var(--primary-color); font-size: 0.96rem;" id="modal-sched-query-range">--</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 0.84rem; color: var(--text-muted);">此時段可用餘額：</div>
+            <div style="font-weight: 700; font-size: 1.15rem; color: var(--accent-green);" id="modal-sched-query-avail">-- 件</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 8px; font-weight: 700; color: var(--primary-color); font-size: 0.92rem; display: flex; justify-content: space-between; align-items: center;">
+          <span>已借出與預約登記時程清單</span>
+          <span style="font-size: 0.78rem; font-weight: normal; color: var(--text-muted);">按借用起始日期排序</span>
+        </div>
+        
+        <div id="modal-sched-orders-list" style="border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; margin-bottom: 16px;">
+          <!-- 動態載入訂單列表 -->
+        </div>
+
+        <div style="background: #FFFDF9; border: 1px solid #EAD8C3; border-radius: 6px; padding: 10px 14px; font-size: 0.82rem; color: #7A4B20; line-height: 1.5;">
+          <strong>💡 檔期調配說明：</strong><br>
+          • <strong>無縫銜接</strong>：前一位老師今日歸還、隔日即可由下一位老師借出（時段無重疊衝突）。<br>
+          • <strong>彈性協調</strong>：若您選取的時段顯示額滿，可參考上方已預約之同仁，直接與同仁協調借還日期或出隊裝備分流。
+        </div>
+      </div>
+      <div style="padding: 14px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--bg-main); border-radius: 0 0 var(--radius-lg) var(--radius-lg); flex-wrap: wrap; gap: 8px;">
+        <button type="button" class="btn-coord-link" style="padding: 8px 16px; font-size: 0.88rem;" onclick="openCoordinationModal(currentScheduleItemId)">🤝 此時段有衝突？申請檔期協調</button>
+        <button type="button" class="btn-action btn-secondary" style="padding: 8px 22px; font-size: 0.9rem;" onclick="closeScheduleModal()">關閉視窗</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 裝備借用協調申請彈窗 (Modal) -->
+  <div class="modal-overlay" id="modal-coordination">
+    <div class="modal-card" style="max-width: 680px;">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">裝備借用協調申請表</div>
+          <div style="font-size: 0.85rem; color: var(--accent-amber); margin-top: 3px;">慈心華德福高中 ｜ 依活動順位進行跨班級裝備評估與協調</div>
+        </div>
+        <button class="modal-close-btn" onclick="closeCoordinationModal()">&times;</button>
+      </div>
+      <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
+        <!-- 時段提示與順位說明橫幅 -->
+        <div style="background: #FFFDF9; border-left: 4px solid var(--accent-orange); border: 1px solid #EAD8C3; border-left-width: 4px; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
+            <div>
+              <span style="font-size: 0.82rem; color: var(--text-muted);">申請協調之借還時段：</span>
+              <strong style="color: var(--primary-color); font-size: 0.96rem;" id="coord-range-display">--</strong>
+            </div>
+            <span class="range-duration-badge" id="coord-duration-badge">共 -- 天</span>
+          </div>
+          <div style="font-size: 0.8rem; color: #7A4B20; margin-top: 6px; line-height: 1.45;">
+            學校活動順位原則：高山與偏遠野外挑戰（第一順位：具生命與防護急迫性）優先於校內或平地炊事練習。冠錡老師將依此原則居中協調跨班級裝備安排。
+          </div>
+        </div>
+
+        <!-- 申請人資訊 -->
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">申請老師姓名 <span style="color: var(--accent-orange);">*</span></label>
+            <input type="text" class="form-input" id="coord-borrower-name" placeholder="例如：陳老師、李帶隊">
+          </div>
+          <div class="form-group">
+            <label class="form-label">所屬班級 <span style="color: var(--accent-orange);">*</span></label>
+            <input type="text" class="form-input" id="coord-class-name" placeholder="例如：8A晴光班、10年級、5B">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">通知 Email（限 @waldorf.ilc.edu.tw 學校信箱） <span style="color: var(--accent-orange);">*</span></label>
+            <div class="email-input-group">
+              <input type="text" class="email-prefix-input" id="coord-email" placeholder="請輸入帳號（例如：yourname）" autocomplete="username">
+              <span class="email-suffix">@waldorf.ilc.edu.tw</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">聯絡電話 / 手機 <span style="color: var(--accent-orange);">*</span></label>
+            <input type="tel" class="form-input" id="coord-phone" placeholder="例如：0912-345678">
+          </div>
+        </div>
+
+        <!-- 活動順位與行程 -->
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">活動性質與優先順位 <span style="color: var(--accent-orange);">*</span></label>
+            <select class="form-input" id="coord-activity-type" style="background:#FFFFFF; font-weight:600; color:var(--primary-color);">
+              <option value="高山 / 偏遠野外挑戰（第一順位：長天數重裝、高山過夜、具安全急迫性）">高山 / 偏遠野外挑戰（第一順位：長天數重裝、高山過夜、具安全急迫性）</option>
+              <option value="近郊走讀 / 一般營地露營（第二順位：有常規營地或備援設施）">近郊走讀 / 一般營地露營（第二順位：有常規營地或備援設施）</option>
+              <option value="校內 / 平地炊事與裝備練習（第三順位：可彈性調整日期或使用替代裝備）">校內 / 平地炊事與裝備練習（第三順位：可彈性調整日期或使用替代裝備）</option>
+              <option value="其他專案教學活動">其他專案教學活動</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">要去的行程地點與活動內容 <span style="color: var(--accent-orange);">*</span></label>
+            <input type="text" class="form-input" id="coord-activity-name" placeholder="例如：加羅湖重裝登山挑戰、桃源谷體訓">
+          </div>
+        </div>
+
+        <!-- 欲申請協調裝備明細 -->
+        <div style="margin-top: 14px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+          <div style="font-weight: 700; color: var(--primary-color); font-size: 0.95rem;">欲申請協調之裝備清單 <span style="color: var(--accent-orange);">*</span></div>
+          <div style="display: flex; gap: 6px;">
+            <select id="coord-add-item-select" style="padding: 4px 8px; font-size: 0.82rem; border-radius: 6px; border: 1px solid var(--border-color); max-width: 220px;">
+              <!-- 動態載入裝備選項 -->
+            </select>
+            <button type="button" class="btn-action" style="padding: 4px 10px; font-size: 0.82rem; background: var(--primary-light); color: var(--primary-color);" onclick="addCoordinationItemFromSelect()">＋ 加入品項</button>
+          </div>
+        </div>
+
+        <table class="selected-items-table" style="margin-bottom: 14px;">
+          <thead>
+            <tr>
+              <th>需求裝備品項</th>
+              <th style="width: 110px; text-align: center;">時段可用量</th>
+              <th style="width: 110px; text-align: center;">需求數量</th>
+              <th style="width: 60px; text-align: center;">操作</th>
+            </tr>
+          </thead>
+          <tbody id="coord-items-tbody">
+            <!-- 動態填入協調品項 -->
+          </tbody>
+        </table>
+
+        <!-- 協調原因與替代彈性說明 -->
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label class="form-label">協調原因與替代方案彈性說明 <span style="color: var(--accent-orange);">*</span></label>
+          <textarea class="form-input" id="coord-reason" rows="3" placeholder="請簡述活動急迫性、裝備使用場景，以及若數量不足或時段微調是否能接受替代方案？（例如：本行程為高山低溫過夜，迫切需要防風高山爐，無法以平地卡式爐替代；若蜘蛛爐數量不足，願意減少至 4 頂，或接受藍袋黑袋混合出借；出發日期可前後微調 1 天等）"></textarea>
+          <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">說明越具體，冠錡老師越能迅速協助您與同時段其他班級同仁達成最佳配置。</div>
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" class="btn-action btn-secondary" style="padding: 10px 20px;" onclick="closeCoordinationModal()">取消</button>
+          <button type="button" class="btn-action" style="background: var(--accent-orange); color: #FFFFFF; padding: 10px 24px; font-size: 0.95rem; font-weight: 700;" id="btn-submit-coord" onclick="submitCoordinationForm()">確認送出協調申請</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 借用資訊填寫彈窗 (Modal) -->
+  <div class="modal-overlay" id="borrow-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">填寫裝備借用申請表</div>
+        <button class="modal-close-btn" onclick="closeBorrowModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <h4 style="margin-bottom: 8px; color: var(--primary-color);">本次借用品項</h4>
+        <table class="selected-items-table">
+          <thead>
+            <tr>
+              <th>品名</th>
+              <th style="width: 70px; text-align: center;">數量</th>
+              <th style="width: 50px; text-align: center;">操作</th>
+            </tr>
+          </thead>
+          <tbody id="modal-items-tbody">
+            <!-- 動態生成已選品項 -->
+          </tbody>
+        </table>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">借用人姓名 <span style="color: var(--accent-orange);">*</span></label>
+            <input type="text" class="form-input" id="borrower-name" placeholder="例如：陳老師、李帶隊">
+          </div>
+          <div class="form-group">
+            <label class="form-label">所屬班級或活動 <span style="color: var(--accent-orange);">*</span></label>
+            <input type="text" class="form-input" id="activity-name" placeholder="例如：8A晴光班桃源谷、5A主課">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">通知 Email（限 @waldorf.ilc.edu.tw 學校信箱） <span style="color: var(--accent-orange);">*</span></label>
+            <div class="email-input-group">
+              <input type="text" class="email-prefix-input" id="borrower-email" placeholder="請輸入帳號（例如：yourname）" autocomplete="username">
+              <span class="email-suffix">@waldorf.ilc.edu.tw</span>
+            </div>
+            <div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 3px;">系統將寄送借用確認信與 A4 檢核單至此學校信箱</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">聯絡電話 / 分機</label>
+            <input type="tel" class="form-input" id="borrower-phone" placeholder="例如：0912-345678">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">預計借出日期 <span style="color: var(--accent-orange);">*</span></label>
+            <input type="date" class="form-input" id="borrow-date" onchange="syncModalDateToGlobal()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">預計歸還日期 <span style="color: var(--accent-orange);">*</span></label>
+            <input type="date" class="form-input" id="return-date" onchange="syncModalDateToGlobal()">
+          </div>
+        </div>
+
+        <div class="agreement-box">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="font-weight: 700; font-size: 0.92rem; color: var(--primary-color);">借用切結承諾事項</div>
+            <span style="font-size: 0.78rem; color: #C0392B; font-weight: 600;">* 依所選裝備動態生成，須全數確認勾選方可進入借用</span>
+          </div>
+          <div id="dynamic-agreements-container">
+            <!-- 動態根據所選裝備渲染承諾事項 -->
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button class="btn-action btn-secondary" style="padding: 10px 20px;" onclick="closeBorrowModal()">取消</button>
+          <button class="btn-action btn-return" style="padding: 10px 24px; font-size: 0.95rem;" id="btn-submit-loan" onclick="submitLoanOrder()">確認送出並產出檢核單</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 借用單查詢與修改彈窗 (Lookup Modal) -->
+  <div class="modal-overlay" id="lookup-modal">
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header">
+        <div class="modal-title">查詢 / 修改借用單</div>
+        <button class="modal-close-btn" onclick="closeLookupModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5;">
+          請輸入原借用單號與申請時登記的學校官方信箱，比對通過後即可在線上調整借用裝備品項與借還日期。
+        </p>
+        <div class="form-group">
+          <label class="form-label">借用單號 <span style="color: var(--accent-orange);">*</span></label>
+          <input type="text" class="form-input" id="lookup-order-id" placeholder="例如：LOAN-20260910-001">
+        </div>
+        <div class="form-group">
+          <label class="form-label">申請人 Email（限 @waldorf.ilc.edu.tw 學校信箱） <span style="color: var(--accent-orange);">*</span></label>
+          <div class="email-input-group">
+            <input type="text" class="email-prefix-input" id="lookup-email" placeholder="請輸入帳號（例如：yourname）" autocomplete="username">
+            <span class="email-suffix">@waldorf.ilc.edu.tw</span>
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+          <button class="btn-action btn-secondary" style="padding: 10px 20px;" onclick="closeLookupModal()">取消</button>
+          <button class="btn-action btn-print" style="padding: 10px 22px;" id="btn-submit-lookup" onclick="submitLookupOrder()">查詢並開始修改</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 借用成功與一鍵列印彈窗 -->
+  <div class="modal-overlay" id="success-modal">
+    <div class="modal-card" style="text-align: center; padding: 32px 24px;">
+      <div style="font-size: 2.4rem; color: var(--accent-green); margin-bottom: 10px;">✓</div>
+      <h2 style="color: var(--primary-color); margin-bottom: 8px;" id="success-modal-title">借用申請成功！</h2>
+      <p style="font-size: 0.95rem; color: var(--text-muted); margin-bottom: 6px;">
+        借用單號：<strong id="success-order-id" style="color: var(--text-main); font-size: 1.1rem;"></strong>
+      </p>
+      <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 24px;" id="success-modal-desc">
+        通知信已同步發送至冠錡老師信箱與您的 Email。<br>
+        出庫前請直接列印 A4 檢核單，於實體點交時簽名確認。
+      </p>
+
+      <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+        <button class="btn-action btn-print" style="padding: 12px 24px; font-size: 1rem;" id="btn-download-pdf-modal" onclick="downloadCurrentOrderPdf()">
+          下載 A4 出庫驗收檢核單 (PDF)
+        </button>
+        <button class="btn-action btn-secondary" style="padding: 12px 18px; font-size: 0.95rem;" onclick="viewCurrentOrderSheet()">
+          線上檢視檢核單
+        </button>
+        <button class="btn-action btn-secondary" style="padding: 12px 18px; font-size: 0.95rem;" onclick="closeSuccessModal()">
+          完成並關閉
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新手上手指引視窗 (Welcome Guide Modal) -->
+  <div class="modal-overlay" id="welcome-guide-modal" onclick="if(event.target === this) closeWelcomeGuide()">
+    <div class="modal-card" style="max-width: 740px; width: 94%; border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.35); border: 2px solid var(--border-color);">
+      <div class="modal-header" style="background: linear-gradient(135deg, var(--primary-color) 0%, #172B23 100%); padding: 20px 26px; border-bottom: 3px solid var(--accent-amber);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="background: var(--accent-orange); color: #FFFFFF; font-size: 0.82rem; font-weight: 800; padding: 3px 12px; border-radius: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.25);">上手指南</span>
+          <div class="modal-title" style="font-size: 1.25rem; font-weight: 700; letter-spacing: 0.5px;">戶外裝備借還系統 · 新手使用指南</div>
+        </div>
+        <button class="modal-close-btn" onclick="closeWelcomeGuide()" title="關閉指引" style="font-size: 1.8rem;">&times;</button>
+      </div>
+      <div class="modal-body" style="padding: 26px; background: #FAF8F5; max-height: 75vh; overflow-y: auto;">
+        
+        <div style="text-align: center; margin-bottom: 22px;">
+          <div style="display: inline-block; background: rgba(231, 111, 81, 0.12); color: #E76F51; font-size: 0.85rem; font-weight: 700; padding: 3px 14px; border-radius: 16px; margin-bottom: 6px;">
+            10 秒掌握核心流程
+          </div>
+          <h3 style="color: var(--primary-color); font-size: 1.35rem; font-weight: 800; margin-bottom: 6px;">
+            3 步驟快速上手：線上借裝備很簡單！
+          </h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5;">
+            歡迎借用學校戶外與露營裝備，全校現行 27 類品項均連動即時庫存，請依照以下流程操作：
+          </p>
+        </div>
+
+        <!-- 3 步驟視覺化卡片 (更清晰醒目) -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px;">
+          <!-- 步驟 1 -->
+          <div style="background: #FFFFFF; border: 2px solid #C8E6C9; border-top: 5px solid var(--primary-color); border-radius: 12px; padding: 18px 14px; text-align: center; box-shadow: 0 4px 12px rgba(43,76,63,0.08);">
+            <div style="width: 40px; height: 40px; line-height: 40px; background: var(--primary-color); color: #FFFFFF; border-radius: 50%; margin: 0 auto 12px; font-weight: 800; font-size: 1.15rem; box-shadow: 0 3px 8px rgba(43,76,63,0.3); border: 2px solid #FFFFFF;">1</div>
+            <div style="font-weight: 800; color: var(--text-main); font-size: 1rem; margin-bottom: 6px;">線上挑選裝備</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.55; text-align: left;">
+              點選分類或搜尋，即時看「在庫可借數量」，點選 <strong style="color: var(--primary-color); font-size: 0.95rem;">「＋」</strong> 加入借用清單。
+            </div>
+          </div>
+
+          <!-- 步驟 2 -->
+          <div style="background: #FFFFFF; border: 2px solid #FFE0B2; border-top: 5px solid var(--accent-amber); border-radius: 12px; padding: 18px 14px; text-align: center; box-shadow: 0 4px 12px rgba(212,163,115,0.08);">
+            <div style="width: 40px; height: 40px; line-height: 40px; background: #D4A373; color: #1A2E26; border-radius: 50%; margin: 0 auto 12px; font-weight: 800; font-size: 1.15rem; box-shadow: 0 3px 8px rgba(212,163,115,0.3); border: 2px solid #FFFFFF;">2</div>
+            <div style="font-weight: 800; color: var(--text-main); font-size: 1rem; margin-bottom: 6px;">填單送出申請</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.55; text-align: left;">
+              填寫姓名、學校信箱、活動與借還日期，勾選華德福愛惜公約後點擊確認送出。
+            </div>
+          </div>
+
+          <!-- 步驟 3 -->
+          <div style="background: #FFFFFF; border: 2px solid #FFCDD2; border-top: 5px solid var(--accent-orange); border-radius: 12px; padding: 18px 14px; text-align: center; box-shadow: 0 4px 12px rgba(231,111,81,0.08);">
+            <div style="width: 40px; height: 40px; line-height: 40px; background: #E76F51; color: #FFFFFF; border-radius: 50%; margin: 0 auto 12px; font-weight: 800; font-size: 1.15rem; box-shadow: 0 3px 8px rgba(231,111,81,0.3); border: 2px solid #FFFFFF;">3</div>
+            <div style="font-weight: 800; color: var(--text-main); font-size: 1rem; margin-bottom: 6px;">取件與曬乾歸還</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.55; text-align: left;">
+              系統發信附 A4 檢核單；與冠錡老師約時間至器材室領取，返校後<strong style="color: #C62828;">徹底陰乾清潔</strong>交由冠錡老師點收銷案。
+            </div>
+          </div>
+        </div>
+
+        <!-- 裝備借用協調申請簡易指南（當裝備額滿或檔期衝突時） -->
+        <div style="background: #FFFDF9; border: 2px solid #EAD8C3; border-top: 5px solid var(--accent-orange); border-radius: 12px; padding: 18px 20px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(212,163,115,0.12);">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="background: var(--accent-orange); color: #FFFFFF; font-size: 0.78rem; font-weight: 800; padding: 3px 10px; border-radius: 12px;">庫存不足應變</span>
+              <strong style="color: var(--primary-color); font-size: 1.05rem;">裝備額滿怎麼辦？「裝備協調申請」簡易指南</strong>
+            </div>
+            <span style="font-size: 0.8rem; color: #7A4B20; font-weight: 600;">跨班級彈性調度機制</span>
+          </div>
+          <p style="font-size: 0.86rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 14px;">
+            若您需要的裝備在預計借用期間在庫數量不足（或顯示為 0），請勿擔心！系統提供跨班級協調申請，由陳冠錡老師居中為全校教學與戶外活動進行資源調度：
+          </p>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 14px;">
+            <div style="background: #FAF8F5; border: 1px solid #E2DDD5; border-radius: 8px; padding: 12px 14px;">
+              <div style="font-weight: 700; color: var(--primary-color); font-size: 0.9rem; margin-bottom: 4px;">1. 查看檔期時程</div>
+              <div style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
+                在裝備卡片下方點擊「檔期時程」，即可查閱該品項在各時段已被哪些班級借用或預約。
+              </div>
+            </div>
+            <div style="background: #FAF8F5; border: 1px solid #E2DDD5; border-radius: 8px; padding: 12px 14px;">
+              <div style="font-weight: 700; color: var(--primary-color); font-size: 0.9rem; margin-bottom: 4px;">2. 送出協調申請</div>
+              <div style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
+                點擊「裝備協調申請」，填寫活動性質、行程地點、所需數量與替代彈性說明（如微調日期或替代型號）。
+              </div>
+            </div>
+            <div style="background: #FAF8F5; border: 1px solid #E2DDD5; border-radius: 8px; padding: 12px 14px;">
+              <div style="font-weight: 700; color: var(--primary-color); font-size: 0.9rem; margin-bottom: 4px;">3. 依順位居中調度</div>
+              <div style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
+                冠錡老師將收到即時通知，並依「學校活動安全順位」評估後與各班級老師聯繫協調最佳配置。
+              </div>
+            </div>
+          </div>
+
+          <!-- 學校活動安全順位原則說明 -->
+          <div style="background: #FFFFFF; border: 1px solid #EAD8C3; border-left: 4px solid var(--primary-color); border-radius: 6px; padding: 10px 14px; font-size: 0.83rem; line-height: 1.6; color: var(--text-main);">
+            <div style="font-weight: 700; color: var(--primary-color); margin-bottom: 4px;">學校活動安全順位調度原則：</div>
+            • <strong style="color: #C0392B;">第一順位（高山 / 偏遠野外挑戰）</strong>：長天數重裝、高山過夜、具安全防護急迫性與無替代性者最優先。<br>
+            • <strong style="color: #2980B9;">第二順位（近郊走讀 / 一般營地露營）</strong>：有常規營地或備援設施之戶外教學。<br>
+            • <strong style="color: #B45309;">第三順位（校內 / 平地炊事與裝備練習）</strong>：可彈性調整日期或使用替代裝備者。<br>
+            <span style="color: var(--text-muted); font-size: 0.78rem;">（冠錡老師將依此原則積極居中協調，確保高風險野外活動之學童安全無虞。）</span>
+          </div>
+        </div>
+
+        <!-- 華德福愛惜裝備三大公約與重點提醒 (醒目雙框警告) -->
+        <div style="background: #FFFDF5; border: 2px solid #EAD8C3; border-left: 6px solid #E76F51; border-radius: 8px; padding: 16px 20px; margin-bottom: 24px; font-size: 0.88rem; color: #4E342E; line-height: 1.7; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <strong style="color: #C62828; font-size: 0.96rem;">華德福裝備愛惜三大核心公約：</strong>
+          </div>
+          • <strong style="color: #B71C1C;">徹底陰乾鐵則</strong>：凡帳篷、天幕、地布、水袋與濾水器，<strong>絕不潮濕封存</strong>！返校 24 小時內請徹底通風陰乾後再收袋。<br>
+          • <strong style="color: #E65100;">材質分流鐵則</strong>：鍍鋁/氧化鋁套鍋<strong>嚴禁鋼刷與菜瓜布</strong>，僅限使用黃色海綿清潔。<br>
+          • <strong style="color: #2E7D32;">零件點齊與如實回報</strong>：營釘、營繩配件依數點齊歸袋；野外若有損壞，請歸還點收時主動如實告知。
+        </div>
+
+        <!-- 底部行動按鈕區 -->
+        <div style="display: flex; justify-content: center; gap: 14px; align-items: center; flex-wrap: wrap;">
+          <button type="button" class="btn-action" onclick="closeWelcomeGuide()" style="background: linear-gradient(135deg, var(--primary-color) 0%, #1E372D 100%); color: #FFFFFF; padding: 13px 44px; font-size: 1.05rem; font-weight: 800; border-radius: 10px; box-shadow: 0 4px 16px rgba(43,76,63,0.35); cursor: pointer; letter-spacing: 0.5px;">
+            我知道了，開始挑選裝備
+          </button>
+        </div>
+        <div style="text-align: center; margin-top: 12px; font-size: 0.8rem; color: var(--text-muted);">
+          （點擊後系統將記住您的選擇，下次造訪不會主動彈出；您可隨時點選頁首最上方「第一次使用？點此開啟 3 步驟新手上手指南」重新查閱）
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       A4 列印專用排版區 (Print Layout)
+       ============================================================ -->
+  <div class="print-layout" id="print-layout">
+    <!-- 列印時自動隱藏的頂部控制列 -->
+    <div class="no-print" style="margin-bottom: 20px; padding: 12px 18px; background: var(--primary-light); border: 1px solid var(--primary-color); border-radius: var(--radius-sm); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+      <div style="font-weight: 700; color: var(--primary-color); font-size: 1rem;">
+        慈心華德福 戶外裝備出庫驗收檢核單
+      </div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button class="btn-action btn-print" style="padding: 8px 16px; font-size: 0.9rem;" id="btn-download-pdf-top" onclick="downloadCurrentOrderPdf()">
+          下載 A4 檢核單 (PDF)
+        </button>
+        <button class="btn-action btn-secondary" style="padding: 8px 14px; font-size: 0.9rem;" onclick="downloadCurrentOrderHtml()">
+          下載 HTML 檔
+        </button>
+        <button class="btn-action btn-secondary" style="padding: 8px 14px; font-size: 0.9rem;" onclick="window.print()">
+          列印紙本
+        </button>
+        <button class="btn-action btn-secondary" style="padding: 8px 14px; font-size: 0.9rem;" onclick="closePrintView()">
+          返回借用系統
+        </button>
+      </div>
+    </div>
+
+    <div id="print-content-to-export">
+      <div class="print-header">
+      <h1>慈心華德福高中 戶外裝備出庫驗收與維護檢核單</h1>
+      <p>愛惜使用、清潔乾燥歸還，謝謝你為下一位夥伴用心照顧裝備 ｜ 維護負責人：陳冠錡 老師</p>
+    </div>
+
+    <div class="print-meta-grid">
+      <div><strong>借用單號：</strong><span id="p-order-id"></span></div>
+      <div><strong>借用人：</strong><span id="p-borrower-name"></span></div>
+      <div><strong>班級/活動：</strong><span id="p-activity-name"></span></div>
+      <div><strong>聯絡信箱：</strong><span id="p-email"></span></div>
+      <div><strong>出庫借用日期：</strong><span id="p-borrow-date"></span></div>
+      <div><strong>預計歸還日期：</strong><span id="p-return-date"></span></div>
+    </div>
+
+    <table class="print-table">
+      <thead>
+        <tr>
+          <th style="width: 18%;">借用品名與數量</th>
+          <th style="width: 25%;">出庫檢查重點</th>
+          <th style="width: 10%;">出庫點交</th>
+          <th style="width: 27%;">野外使用與清潔維護標準</th>
+          <th style="width: 10%;">歸還點收</th>
+          <th style="width: 10%;">異常備註</th>
+        </tr>
+      </thead>
+      <tbody id="p-items-tbody">
+        <!-- 動態帶入該訂單借用的品項與標準 -->
+      </tbody>
+    </table>
+
+    <div class="print-sign-box">
+      <div>
+        <strong>【出庫交接簽章】</strong><br>
+        本小隊已於出庫時逐項檢查上述裝備，確認零件無缺損、螺紋橡膠圈正常，並詳閱安全與維護守則。<br>
+        <div class="sign-row">
+          <span>借用負責人：_______________</span>
+          <span>出庫點交人：_______________</span>
+        </div>
+      </div>
+      <div>
+        <strong>【歸還驗收簽章】</strong><br>
+        裝備已完全陰乾乾燥、鋁鍋僅用海綿洗淨、無潮濕發霉，零件點收齊全。<br>
+        <div class="sign-row">
+          <span>歸還負責人：_______________</span>
+          <span>返還驗收人：_______________</span>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <script>
+    // 本機直接內嵌 27 項完整裝備母本資料
+    const EMBEDDED_INVENTORY = [{"id": "EQ-001", "name": "蜘蛛爐（藍袋組）", "category": "炊事裝備", "type": "stove", "total_qty": 9, "spec": "分離式高山瓦斯爐（編號 1–9）", "dimensions": "", "weight": "380g", "restriction": "【待辦事項】出借強制配發一個打火機", "inspection": "• 導管外觀良好無壓扁破裂\n• 爐腳展開平穩、微調閥開關順暢", "safety": "• 先引火再開微量瓦斯\n• 瓦斯罐一律正立（嚴禁倒置）\n• 擋風板保持散熱開口", "clean": "• 冷卻 3 分鐘後方可拆卸瓦斯罐\n• 濕布擦淨爐盤湯汁油垢\n• 導管順向圓弧收整（勿硬折）", "accessories": "專屬藍色收納外袋、打火機"}, {"id": "EQ-002", "name": "蜘蛛爐（黑袋組）", "category": "炊事裝備", "type": "stove", "total_qty": 16, "spec": "分離式高山瓦斯爐（編號 1–16）", "dimensions": "", "weight": "380g", "restriction": "【待辦事項】出借強制配發一個打火機", "inspection": "• 導管外觀良好無壓扁破裂\n• 爐腳展開平穩、微調閥開關順暢", "safety": "• 先引火再開微量瓦斯\n• 瓦斯罐一律正立（嚴禁倒置）\n• 擋風板保持散熱開口", "clean": "• 冷卻 3 分鐘後方可拆卸瓦斯罐\n• 濕布擦淨爐盤湯汁油垢\n• 導管順向圓弧收整（勿硬折）", "accessories": "專屬黑色收納外袋、打火機"}, {"id": "EQ-003", "name": "蜘蛛爐（高火力）", "category": "炊事裝備", "type": "stove", "total_qty": 2, "spec": "高火力高山瓦斯爐（飛碟爐）", "dimensions": "", "weight": "250g", "restriction": "高階公炊備用爐具，專案備用", "inspection": "• 導管外觀良好無壓扁破裂\n• 爐腳展開平穩、微調閥開關順暢", "safety": "• 先引火再開微量瓦斯\n• 瓦斯罐一律正立（嚴禁倒置）\n• 擋風板保持散熱開口", "clean": "• 冷卻 3 分鐘後方可拆卸瓦斯罐\n• 濕布擦淨爐盤湯汁油垢\n• 導管順向圓弧收整（勿硬折）", "accessories": "原廠收納外袋、打火機"}, {"id": "EQ-004", "name": "單口卡式爐", "category": "炊事裝備", "type": "stove", "total_qty": 1, "spec": "標準單口卡式瓦斯爐", "dimensions": "", "weight": "1.3kg", "restriction": "平地營地或室內炊事教學使用", "inspection": "• 卡扣/磁吸接頭無鏽蝕與異物\n• 退罐撥桿動作靈敏、過壓保護正常\n• 爐架平整無歪斜", "safety": "• 【嚴禁過大鍋具】鍋底勿覆蓋瓦斯倉鐵蓋，防輻射熱引爆！\n• 嚴禁雙爐併排加熱大鍋", "clean": "• 使用完畢立即退罐取出瓦斯罐\n• 中性洗劑擦除爐面與油槽油污\n• 擦乾後放入原廠硬塑膠手提收納盒", "accessories": "原廠手提硬塑膠收納盒"}, {"id": "EQ-005", "name": "露營用雙口卡式爐", "category": "炊事裝備", "type": "stove", "total_qty": 1, "spec": "戶外露營用雙口卡式爐", "dimensions": "", "weight": "4.5kg", "restriction": "雙口獨立供氣，基地營大隊公炊專用", "inspection": "• 雙側點火開關、調節閥與退罐桿作動良好\n• 防風頂蓋鉸鏈與鎖扣穩固\n• 爐台腳架承重平穩", "safety": "• 兩側鍋具皆合規，不壓在瓦斯倉蓋上\n• 倉蓋扣緊，保持通風良好環境\n• 烹調全程專人控火，隨時防溢鍋撲火", "clean": "• 兩側瓦斯罐皆確實退罐取出\n• 爐台與雙邊集油盤徹底除油擦拭\n• 乾燥後闔上外蓋、扣好把手手提收納", "accessories": "原廠一體式防風外蓋、手提把手"}, {"id": "EQ-006", "name": "折疊鋁合金擋風板", "category": "炊事裝備", "type": "stove", "total_qty": 15, "spec": "折疊式鋁合金擋風板（8–10片折疊）", "dimensions": "", "weight": "250g", "restriction": "維持戶外炊事熱效率必備", "inspection": "• 檢查折頁鉸鏈插銷完整無缺片\n• 展開各片平整順暢無嚴重扭曲", "safety": "•【嚴禁包覆瓦斯罐】擋風板僅包覆爐頭與鍋底！\n• 迎風面拉出弧度，兩端插針插入土中固牢", "clean": "• 降溫後方可收折，防燙傷\n• 濕布擦除附著之油煙與泥土\n• 順折痕平整收回硬殼或收納套袋中", "accessories": "專用收納硬殼或收納布袋、兩端地面固定插針"}, {"id": "EQ-007", "name": "隔熱防燙手套", "category": "炊事裝備", "type": "stove", "total_qty": 4, "spec": "戶外炊事厚款耐高溫隔熱手套", "dimensions": "", "weight": "150g / 雙", "restriction": "炊事端熱鍋熱湯安全防護", "inspection": "• 手套表面無大面積破損開線或焦洞\n• 內襯乾燥無油膩發霉", "safety": "• 僅供防燙端鍋移鍋，非防火手套\n• 嚴禁直接抓取燒紅炭火或直火炙燒\n• 潮濕時隔熱效果驟降，避免手套濕透端熱鍋", "clean": "• 沾染湯汁或泥巴時，以溫水輕柔手洗\n• 懸掛完全晾乾後成雙收納\n• 存放於乾燥通風處，避免受潮", "accessories": "成雙配對手套組（左右手一雙）"}, {"id": "EQ-008", "name": "不鏽鋼套鍋（六人鍋組）", "category": "炊事裝備", "type": "cookware", "total_qty": 5, "spec": "大鍋 + 中鍋 + 煎盤 + 鍋蓋（編號 1、2、3、4、6）", "dimensions": "", "weight": "1.8kg", "restriction": "耐刷耐磨，可使用一般菜瓜布清洗", "inspection": "• 鍋身無嚴重凹陷破裂，鍋底平整\n• 折疊把手卡榫牢靠、防燙膠套無融化\n• 鍋蓋旋鈕螺絲鎖緊無晃動", "safety": "• 【嚴禁空燒】防變形焦黑\n• 煎炒時加入適量食用油防沾", "clean": "• 使用綠色菜瓜布、洗碗精清潔\n• 燒焦時加小蘇打水熱煮浸泡後刷除\n• 洗淨徹底擦乾，依大中小套疊收納入網袋", "accessories": "大鍋、中鍋、平底煎盤、多功能鍋蓋、透氣收納網袋"}, {"id": "EQ-009", "name": "不鏽鋼套鍋（五人鍋組）", "category": "炊事裝備", "type": "cookware", "total_qty": 5, "spec": "大鍋 + 中鍋 + 鍋蓋兼煎盤（編號 B1–B6）", "dimensions": "", "weight": "1.5kg", "restriction": "【註】B5 組缺把手，出借時搭配專用防燙夾", "inspection": "• 鍋身無嚴重凹陷破裂，鍋底平整\n• 折疊把手卡榫牢靠、防燙膠套無融化\n• 鍋蓋旋鈕螺絲鎖緊無晃動", "safety": "• 【嚴禁空燒】防變形焦黑\n• 煎炒時加入適量食用油防沾", "clean": "• 使用綠色菜瓜布、洗碗精清潔\n• 燒焦時加小蘇打水熱煮浸泡後刷除\n• 洗淨徹底擦乾，依大中小套疊收納入網袋", "accessories": "大鍋、中鍋、平底煎盤、多功能鍋蓋、透氣收納網袋"}, {"id": "EQ-010", "name": "鍍鋁套鍋（六人鍋組）", "category": "炊事裝備", "type": "cookware", "total_qty": 4, "spec": "大鍋 + 中鍋 + 小鍋 + 煎盤（編號 1–6）", "dimensions": "", "weight": "1.2kg", "restriction": "【紅色警示】嚴禁菜瓜布！洗滌只准黃海綿", "inspection": "• 保護層完好無大面積露鋁刮傷\n• 手把防燙隔熱包層完整無融化\n• 鍋身圓整無受壓變形，鍋蓋密合良好", "safety": "•【嚴禁空燒】防變形焦黑！\n•【勿用金屬餐具刮鍋底】建議使用木匙或矽膠餐具！\n• 嚴禁長時間盛裝酸性食材", "clean": "• 【勿用鋼刷清洗】只能用海綿菜瓜布洗滌！\n• 燒焦時加小蘇打水熱煮浸泡後使用海綿菜瓜布抹除\n• 完全擦乾後大套小收納", "accessories": "大中小鍋、煎盤、專用鍋蓋、專用黃色海綿、透氣收納網袋"}, {"id": "EQ-011", "name": "鍍鋁套鍋（五人鍋組）", "category": "炊事裝備", "type": "cookware", "total_qty": 5, "spec": "大鍋 + 中鍋 + 小鍋 + 煎盤（編號 A1–A6）", "dimensions": "", "weight": "1.0kg", "restriction": "【紅色警示】嚴禁菜瓜布！洗滌只准黃海綿", "inspection": "• 保護層完好無大面積露鋁刮傷\n• 手把防燙隔熱包層完整無融化\n• 鍋身圓整無受壓變形，鍋蓋密合良好", "safety": "•【嚴禁空燒】防變形焦黑！\n•【勿用金屬餐具刮鍋底】建議使用木匙或矽膠餐具！\n• 嚴禁長時間盛裝酸性食材", "clean": "• 【勿用鋼刷清洗】只能用海綿菜瓜布洗滌！\n• 燒焦時加小蘇打水熱煮浸泡後使用海綿菜瓜布抹除\n• 完全擦乾後大套小收納", "accessories": "大中小鍋、煎盤、專用鍋蓋、專用黃色海綿、透氣收納網袋"}, {"id": "EQ-012", "name": "洗滌大臉盆組", "category": "炊事裝備", "type": "cookware", "total_qty": 1, "spec": "營地大容量洗滌與公炊備料臉盆組", "dimensions": "", "weight": "600g", "restriction": "公炊洗菜、餐具洗滌集水專用", "inspection": "• 盆口與邊緣光滑無尖銳毛邊\n• 盆身無穿刺破孔，盛水無滲漏", "safety": "• 用於炊事務必搭配防燙手套\n• 不可置於強火爐具上乾燒", "clean": "•【勿用鋼刷清洗】只能用海綿菜瓜布洗滌！\n• 燒焦時加小蘇打水熱煮浸泡後使用海綿菜瓜布抹除\n• 清理後完全擦乾", "accessories": "鋁製大臉盆、不鏽鋼大臉盆、不鏽鋼大鍋蓋"}, {"id": "EQ-013", "name": "1–2人 輕量天幕", "category": "睡眠裝備", "type": "tarp", "total_qty": 9, "spec": "輕量防水天幕", "dimensions": "211 × 297 cm", "weight": "450g", "restriction": "需搭配營柱或登山杖搭設", "inspection": "• 邊角受力織帶無脫線，金屬銅眼無撕裂\n• 主屋脊熱封防水壓膠條平整無脫膠白化\n• 天幕布透光檢視無穿孔或火星傷痕", "safety": "• 遠離營火火星", "clean": "• 嚴禁濕收密封超過 48 小時！返校當天攤開晾乾\n• 軟毛刷刷除泥土枯葉，勿機洗、勿用強烈去污劑\n• 乾燥無水氣後整齊摺疊入袋", "accessories": "8 支營釘、8 條營繩、天幕專用收納袋\n註：需搭配營柱或登山杖搭設"}, {"id": "EQ-014", "name": "6人 超輕量大天幕", "category": "睡眠裝備", "type": "tarp", "total_qty": 5, "spec": "超輕量抗撕裂大天幕", "dimensions": "360 × 360 cm", "weight": "960g", "restriction": "超輕大受風面，四角中線必拉緊", "inspection": "• 天幕無破孔刮痕\n• 三角拉點補強織帶完好無抽絲\n• 縫線防水熱壓膠條平整貼合無粉化", "safety": "• 遠離營火火星", "clean": "• 嚴禁濕收密封超過 48 小時！返校當天攤開晾乾\n• 軟毛刷刷除泥土枯葉，勿機洗、勿用強烈去污劑\n• 乾燥無水氣後整齊摺疊入袋", "accessories": "8 支營釘、8 條營繩、天幕專用收納袋\n註：需搭配營柱或登山杖搭設"}, {"id": "EQ-015", "name": "重型藍白帆布", "category": "睡眠裝備", "type": "tarp", "total_qty": 1, "spec": "加厚耐磨防水藍白帆布", "dimensions": "360 × 360 cm", "weight": "1.5kg", "restriction": "公裝遮蓋與地面公鋪專用", "inspection": "• 邊緣打孔金屬環圈無撕裂脫落\n• 布面無重大穿刺裂痕", "safety": "• 鋪設前清理地面尖石，防止重壓刺穿\n• 戶外防風需用重石壓角或營繩綁緊防大風掀翻", "clean": "• 刷除表面泥巴，水沖乾淨後擦乾曬乾\n• 摺疊成長方形收納，保持乾燥避免發黑", "accessories": "金屬固定孔眼（邊緣配置）、專用收納綁繩"}, {"id": "EQ-016A", "name": "戶外防水地布（1–2人）", "category": "睡眠裝備", "type": "tarp", "total_qty": 7, "spec": "1–2人 帳底防水耐磨防潮地布", "dimensions": "210 × 140 cm", "weight": "280g", "restriction": "帳底防潮；鋪設面積勿超出帳篷外帳", "inspection": "• 地布無破孔刮痕\n• 四角拉點補強織帶完好無抽絲\n• 縫線防水熱壓膠條平整貼合無粉化", "safety": "• 地布鋪設面積勿超出外帳（防雨水倒灌）\n• 避免直接鋪在尖銳刺草尖石上", "clean": "• 拔營抖落枯枝泥沙，濕抹布擦除底層泥漿\n• 返校充分晾曬乾燥後折疊歸庫", "accessories": "四角固定拉環、專屬收納袋"}, {"id": "EQ-016B", "name": "戶外防水地布（4人）", "category": "睡眠裝備", "type": "tarp", "total_qty": 6, "spec": "4人 帳底防水耐磨防潮地布", "dimensions": "210 × 210 cm", "weight": "480g", "restriction": "帳底防潮；鋪設面積勿超出帳篷外帳", "inspection": "• 地布無破孔刮痕\n• 四角拉點補強織帶完好無抽絲\n• 縫線防水熱壓膠條平整貼合無粉化", "safety": "• 地布鋪設面積勿超出外帳（防雨水倒灌）\n• 避免直接鋪在尖銳刺草尖石上", "clean": "• 拔營抖落枯枝泥沙，濕抹布擦除底層泥漿\n• 返校充分晾曬乾燥後折疊歸庫", "accessories": "四角固定拉環、專屬收納袋"}, {"id": "EQ-016C", "name": "戶外防水地布（6人）", "category": "睡眠裝備", "type": "tarp", "total_qty": 2, "spec": "6人 帳底防水耐磨防潮地布", "dimensions": "280 × 280 cm", "weight": "780g", "restriction": "帳底防潮；鋪設面積勿超出帳篷外帳", "inspection": "• 地布無破孔刮痕\n• 四角拉點補強織帶完好無抽絲\n• 縫線防水熱壓膠條平整貼合無粉化", "safety": "• 地布鋪設面積勿超出外帳（防雨水倒灌）\n• 避免直接鋪在尖銳刺草尖石上", "clean": "• 拔營抖落枯枝泥沙，濕抹布擦除底層泥漿\n• 返校充分晾曬乾燥後折疊歸庫", "accessories": "四角固定拉環、專屬收納袋"}, {"id": "EQ-017", "name": "營釘與營繩套組", "category": "睡眠裝備", "type": "tarp", "total_qty": 36, "spec": "戶外搭設備用營釘與高反光營繩套組", "dimensions": "", "weight": "400g / 套", "restriction": "固定帳篷生命線，依出借數量逐項點齊", "inspection": "• 營釘無嚴重彎曲變形，釘尖平整\n• 營繩纖維無斷股起毛，調節片完好", "safety": "• 營釘於地面呈 45–60 度斜角打入\n• 勿扯營繩拔釘，使用另一支營釘穿入釘孔旋轉拔出\n• 夜間注意拉繩警示，避免走動絆倒", "clean": "• 營釘泥土洗淨並擦乾，防止生鏽氧化\n• 營繩以八字繞繩法捆紮整齊\n• 依出借數量逐支逐條清點歸還", "accessories": "鋁合金/高碳鋼營釘、反光拉繩（附調節片）、配件收納袋"}, {"id": "EQ-018", "name": "犀牛三人帳（Rhino）", "category": "睡眠裝備", "type": "tent", "total_qty": 1, "spec": "雙門三人圓頂登山帳", "dimensions": "", "weight": "3.2kg", "restriction": "經典耐操三人登山帳，結構穩定", "inspection": "• 鋁合金營柱接頭無開裂，內置彈性繩回彈良好\n• 內外帳拉鍊雙向滑順無咬布爆齒\n• 內外帳防水貼條無脫膠翻白", "safety": "• 搭設前先清除尖銳石頭與樹枝並鋪地布打底\n• 入帳必須脫鞋，嚴禁穿登山鞋踏入內帳\n• 帳內絕對嚴禁點火、使用爐具", "clean": "• 拔營前倒置內帳倒出細沙草屑\n• 返校後內外帳、地布全面懸掛徹底陰乾風乾\n• 營柱由正中間向兩端折收（保護彈力繩均勻受力）", "accessories": "內帳、外帳、折疊營柱組、營釘 8 支、營繩 4 條、收納袋"}, {"id": "EQ-019", "name": "MSR 三人輕量高階帳", "category": "睡眠裝備", "type": "tent", "total_qty": 1, "spec": "MSR 頂級超輕量三人帳（高階矽膠抗撕裂面料）", "dimensions": "", "weight": "2.1kg", "restriction": "【高階裝備】限教職員帶隊借用，不開放學生借用", "inspection": "• 超輕矽膠布料無勾破穿孔\n• DAC 輕量鋁合金營柱套管及球頭完好\n• 內帳細紗網無裂洞破縫", "safety": "• 搭設前先清除尖銳石頭與樹枝並鋪地布打底\n• 入帳必須脫鞋，嚴禁穿登山鞋踏入內帳\n• 帳內絕對嚴禁點火、使用爐具", "clean": "• 拔營前倒置內帳倒出細沙草屑\n• 返校後內外帳、地布全面懸掛徹底陰乾風乾\n• 營柱由正中間向兩端折收（保護彈力繩均勻受力）", "accessories": "超輕內帳、外帳、DAC 營柱組、原廠地布、輕量營釘 8 支、營繩組、收納袋"}, {"id": "EQ-020", "name": "犀牛四人帳（Rhino）", "category": "睡眠裝備", "type": "tent", "total_qty": 1, "spec": "四人圓頂野營帳", "dimensions": "", "weight": "4.2kg", "restriction": "四人圓頂野營帳，空間寬敞", "inspection": "• 鋁合金營柱接頭無開裂，內置彈性繩回彈良好\n• 內外帳拉鍊雙向滑順無咬布爆齒\n• 內外帳防水貼條無脫膠翻白", "safety": "• 搭設前先清除尖銳石頭與樹枝並鋪地布打底\n• 入帳必須脫鞋，嚴禁穿登山鞋踏入內帳\n• 帳內絕對嚴禁點火、使用爐具", "clean": "• 拔營前倒置內帳倒出細沙草屑\n• 返校後內外帳、地布全面懸掛徹底陰乾風乾\n• 營柱由正中間向兩端折收（保護彈力繩均勻受力）", "accessories": "內帳、外帳、折疊營柱組、營釘 8 支、營繩 4 條、收納袋"}, {"id": "EQ-021", "name": "四人金字塔單柱帳", "category": "睡眠裝備", "type": "tent", "total_qty": 1, "spec": "四人單柱金字塔式抗風帳", "dimensions": "", "weight": "1.8kg", "restriction": "單柱搭建快速，完全仰賴邊緣地釘張力成形", "inspection": "• 中央主支撐中柱強度與卡榫無損\n• 帳頂頂尖補強受力結構無磨損穿刺\n• 地釘織帶環拉力穩固", "safety": "• 留意營柱支撐點，務必支撐於正確位置", "clean": "• 抖除帳面落葉泥土，擦拭底腳泥痕\n• 徹底晾曬陰乾後折收；中柱擦乾收納", "accessories": "金字塔外帳、營釘 8 支、營繩組、收納袋\n註：需搭配營柱或登山杖2隻搭設"}, {"id": "EQ-022", "name": "Coleman 五人帳", "category": "睡眠裝備", "type": "tent", "total_qty": 0, "spec": "五人家用大型圓頂帳", "dimensions": "", "weight": "8.0kg", "restriction": "【故障列管】暫停借用", "inspection": "【故障列管停用】核心零配件損壞待修，隔離存放於庫房待修區", "safety": "【嚴禁外借使用】待零件補齊修復並驗收後方可開放", "clean": "庫房存放定期開箱通風，檢查塗層有無黏化反潮", "accessories": "內外帳、營柱組（待修補件中）"}, {"id": "EQ-023", "name": "犀牛六人帳（Rhino）", "category": "睡眠裝備", "type": "tent", "total_qty": 1, "spec": "六人大空間團體露營帳", "dimensions": "", "weight": "6.5kg", "restriction": "大受風面帳篷，所有抗風拉繩必外拉釘牢", "inspection": "• 鋁合金營柱接頭無開裂，內置彈性繩回彈良好\n• 內外帳拉鍊雙向滑順無咬布爆齒\n• 內外帳防水貼條無脫膠翻白", "safety": "• 搭設前先清除尖銳石頭與樹枝並鋪地布打底\n• 入帳必須脫鞋，嚴禁穿登山鞋踏入內帳\n• 帳內絕對嚴禁點火、使用爐具", "clean": "• 拔營前倒置內帳倒出細沙草屑\n• 返校後內外帳、地布全面懸掛徹底陰乾風乾\n• 營柱由正中間向兩端折收（保護彈力繩均勻受力）", "accessories": "內帳、外帳、折疊營柱組、營釘 8 支、營繩 4 條、收納袋"}, {"id": "EQ-024", "name": "折疊大公水袋", "category": "飲水裝備", "type": "water", "total_qty": 3, "spec": "大容量食品級戶外折疊儲水袋", "dimensions": "10–15 公升", "weight": "150g", "restriction": "大容量食品級儲水袋，限盛裝生水/煮沸水", "inspection": "• 水袋旋蓋、出水龍頭墊圈密合無滲漏\n• 袋身無尖銳摺痕漏水或異味黴斑", "safety": "• 限盛裝生水或煮沸水，勿盛裝其於液體\n• 搬運滿水水袋時托住底部，避免單拉把手造成撕裂", "clean": "• 溫水沖洗內部，水龍頭拆開洗淨\n• 吹氣撐開袋身，開口朝下倒掛於通風處徹底瀝乾；內部未完全乾燥嚴禁旋緊瓶蓋收納！", "accessories": "水袋本體、可拆卸旋蓋、出水控流龍頭"}, {"id": "EQ-025", "name": "Katadyn BeFree 3.0L 重力濾水袋", "category": "飲水裝備", "type": "water", "total_qty": 1, "spec": "Katadyn BeFree 3.0L 中空絲膜重力自流式淨水系統", "dimensions": "3.0 公升", "weight": "100g", "restriction": "中空絲膜重力濾水，輕晃清洗嚴禁擠捏刷洗", "inspection": "• 中空絲膜濾芯無斷裂破裂\n• 軟式水袋無破孔漏水，快拆接頭出水順暢", "safety": "• 利用重力懸掛高處自流過濾\n• 【清洗鐵則：EZ-Clean】出水變慢時只需在水中輕柔搖晃（Shake/Swish）除泥\n• 【禁令】嚴禁用手揉捏或毛刷刷洗濾芯！冬季入夜放入睡袋保暖防凍裂", "clean": "• 乾淨過濾水反沖洗袋身與濾芯\n• 徹底拆開陰乾 3–5 天，中空絲膜完全乾燥後收盒\n• 冬季防凍：含水結冰會凍裂微管，必須妥善保暖", "accessories": "3.0L 軟式集水袋、BeFree 0.1微米中空絲膜濾芯、快拆導管、懸掛背帶、原廠收納袋"}, {"id": "EQ-026", "name": "MSR MiniWorks EX 陶瓷手壓濾水器", "category": "飲水裝備", "type": "water", "total_qty": 1, "spec": "MSR MiniWorks EX 專業野外陶瓷微孔手壓式淨水器", "dimensions": "1 公升/分鐘", "weight": "456g", "restriction": "精密陶瓷濾芯防摔裂，出水回堵輕刷表面", "inspection": "• 圓柱陶瓷濾芯表面無摔裂、無穿透性裂紋\n• 活塞手柄按壓順暢，單向止回閥片柔軟在位\n• 進水透明矽膠管彈性良好，浮筒與濾網完整", "safety": "• 浮筒置於溪水中層，每分鐘 60–80 下規律平穩按壓手柄\n• 【回堵救援】出水變慢時【嚴禁暴力死命按壓連桿】！應旋開取出陶瓷芯，在水中以內附小菜瓜布輕刷去除表面泥垢\n• 冬季高山入夜放夾鏈袋帶入睡袋保暖防凍裂", "clean": "• 【完全風乾鐵則】全分解陰乾 3–5 天，確認陶瓷濾芯內部徹底乾燥後組裝收盒\n• 嚴禁潮濕密封存放防發霉", "accessories": "手壓陶瓷濾水器本體、Marathon EX 陶瓷濾芯、進水透明矽膠管（附浮筒重錘濾網）、專用清潔菜瓜布、收納網袋"}, {"id": "EQ-027", "name": "定向地圖指北針", "category": "導航裝備", "type": "compass", "total_qty": 13, "spec": "戶外登山地圖判讀專業透明基板定向指北針", "dimensions": "", "weight": "50g", "restriction": "防消磁禁忌：存放嚴禁靠近強磁、音響與大電器", "inspection": "• 檢查油壓轉盤內有無直徑大於 0.5cm 之大氣泡\n• 兩兩比對確認紅色 N 極確實指向北方\n• 透明基板刻度線清晰無斷裂", "safety": "• 讀取時平放胸前，遠離金屬刀具、背包鐵架與手機\n• 避免重摔防油室破裂漏油", "clean": "• 擦拭盤面泥汗污漬\n• 存放於陰涼乾燥避光盒內\n• 【防消磁禁忌】嚴禁靠近強力磁鐵、音響喇叭、大電流電器存放防磁針消磁或極性反轉！", "accessories": "透明壓克力基板指北針本體、掛頸尼龍繩、一體成型刻度放大鏡"}];
+
+    // 全域變數
+    let inventoryData = [];
+    let cart = {}; // { id: qty }
+    let activeCategory = 'all';
+    let currentCompletedOrder = null;
+    let editingOrderId = null;
+    let originalOrderData = null;
+    let activeOrdersData = []; // 未結案之所有有效訂單（含借出中與已預約）
+    let coordItems = []; // 協調申請品項清單 [{ id, name, qty, category, current_avail }]
+    let currentScheduleItemId = null; // 當前在檔期時程查詢彈窗中檢視的品項 ID
+    let currentAdminSubTab = 'orders'; // 後台當前子分頁：'orders' 或 'coord'
+
+    // 輔助函式：解析並補全學校信箱（若僅輸入帳號則自動補綴 @waldorf.ilc.edu.tw）
+    function resolveSchoolEmail(val) {
+      val = (val || '').trim();
+      if (!val) return '';
+      if (val.includes('@')) {
+        return val.toLowerCase();
+      }
+      return (val + '@waldorf.ilc.edu.tw').toLowerCase();
+    }
+
+    // 輔助函式：綁定帳號輸入框自動清理完整貼上的學校尾綴
+    function setupEmailPrefixInputs() {
+      ['borrower-email', 'coord-email', 'lookup-email'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const stripSuffix = function() {
+          let v = el.value.trim();
+          if (v.toLowerCase().endsWith('@waldorf.ilc.edu.tw')) {
+            el.value = v.substring(0, v.length - '@waldorf.ilc.edu.tw'.length).trim();
+          }
+        };
+        el.addEventListener('input', stripSuffix);
+        el.addEventListener('blur', stripSuffix);
+      });
+    }
+
+    // 抹除網址列參數（同時支援 Google Apps Script 容器頂層 URL 與標準 Web 環境）
+    function cleanAppUrlParams() {
+      try {
+        if (typeof google !== 'undefined' && google.script && google.script.history && google.script.history.replace) {
+          google.script.history.replace(null, {}, '');
+        }
+      } catch (e) {}
+      try {
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      } catch (e) {}
+    }
+
+    // 處理已結案訂單：徹底抹除網址參數，以非阻塞頂部橫幅呈現，重新整理不重複提示，絕不彈出系統 alert()
+    function handleClosedOrderAttempt(orderId, msg) {
+      cleanAppUrlParams();
+      const sessionKey = 'dismissed_closed_notice_' + (orderId || '');
+      try {
+        if (sessionStorage.getItem(sessionKey)) {
+          // 本次工作階段或重新整理時完全靜默
+          return;
+        }
+        sessionStorage.setItem(sessionKey, 'true');
+      } catch (e) {}
+
+      showClosedOrderBanner(msg);
+    }
+
+    function showClosedOrderBanner(msg) {
+      const existing = document.getElementById('closed-order-banner');
+      if (existing) existing.remove();
+
+      const banner = document.createElement('div');
+      banner.id = 'closed-order-banner';
+      banner.style.cssText = 'background: #FFF8E1; border: 1px solid #FFE082; border-left: 5px solid var(--accent-orange); border-radius: var(--radius-sm); padding: 12px 18px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px; box-shadow: var(--shadow-sm); animation: fadeIn 0.3s ease;';
+      banner.innerHTML = `
+        <div style="font-size: 0.9rem; color: #7A4B20; line-height: 1.5;">
+          <strong>借用單狀態提醒：</strong>${msg || '此借用單已於先前完成歸還結案，無法再進行修改！若需裝備請重新建立借用申請。'}
+        </div>
+        <button type="button" onclick="this.parentElement.remove()" style="background: none; border: none; font-size: 1.3rem; color: #7A4B20; cursor: pointer; padding: 0 4px; line-height: 1;" title="關閉提醒">&times;</button>
+      `;
+
+      const appView = document.getElementById('app-view');
+      if (appView) {
+        appView.insertBefore(banner, appView.firstChild);
+      }
+    }
+
+    function initApp() {
+      cleanAppUrlParams(); // 第一時間清除網址列參數
+      setupEmailPrefixInputs();
+      // 設定預設借還日期（今日起算至第 3 天，共 4 天 3 夜）
+      const today = new Date();
+      const returnDay = new Date();
+      returnDay.setDate(today.getDate() + 3);
+
+      const bStr = formatDate(today);
+      const rStr = formatDate(returnDay);
+
+      const gBorrowEl = document.getElementById('global-borrow-date');
+      if (gBorrowEl) gBorrowEl.value = bStr;
+      const gReturnEl = document.getElementById('global-return-date');
+      if (gReturnEl) gReturnEl.value = rStr;
+
+      const borrowEl = document.getElementById('borrow-date');
+      if (borrowEl) borrowEl.value = bStr;
+      const returnEl = document.getElementById('return-date');
+      if (returnEl) returnEl.value = rStr;
+
+      /* SERVER_INJECT_INIT */
+      // 檢查是否為獨立列印模式或編輯模式
+      const urlParams = new URLSearchParams(window.location.search);
+      const isActionUrl = urlParams.get('action') === 'print' || urlParams.get('action') === 'edit';
+
+      if (window.__SKIP_URL_ACTION__) {
+        cleanAppUrlParams();
+      } else if (urlParams.get('action') === 'print' && urlParams.get('orderId')) {
+        loadAndPrintOrder(urlParams.get('orderId'));
+        return;
+      } else if (urlParams.get('action') === 'edit' && urlParams.get('orderId')) {
+        const editOrderId = urlParams.get('orderId');
+        const editEmail = urlParams.get('email') || '';
+        cleanAppUrlParams();
+        if (!window.__hasInitiatedEditAction) {
+          window.__hasInitiatedEditAction = true;
+          loadOrderForEdit(editOrderId, editEmail);
+        }
+        return;
+      }
+
+      loadInventoryData();
+      loadActiveOrdersSchedule();
+
+      // 首次造訪新手上手指引檢測 (0.5 秒後淡入，非列印/編輯模式時)
+      if (!isActionUrl && !window.__SKIP_URL_ACTION__) {
+        checkWelcomeGuideOnStartup();
+      }
+    }
+
+    // ===== 新手上手指引視窗 (Welcome Guide) 控制邏輯 =====
+    function openWelcomeGuide() {
+      const modal = document.getElementById('welcome-guide-modal');
+      if (modal) {
+        modal.classList.add('active');
+      }
+    }
+
+    function closeWelcomeGuide() {
+      const modal = document.getElementById('welcome-guide-modal');
+      if (modal) {
+        modal.classList.remove('active');
+      }
+      try {
+        localStorage.setItem('equipment_guide_seen', 'true');
+      } catch (e) {
+        console.warn('LocalStorage access error:', e);
+      }
+    }
+
+    function checkWelcomeGuideOnStartup() {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('action') === 'print' || urlParams.get('action') === 'edit') {
+        return;
+      }
+      try {
+        const hasSeen = localStorage.getItem('equipment_guide_seen');
+        if (!hasSeen) {
+          setTimeout(function() {
+            openWelcomeGuide();
+          }, 500);
+        }
+      } catch (e) {
+        console.warn('LocalStorage access error:', e);
+      }
+    }
+
+    function formatDate(d) {
+      const year = d.getFullYear();
+      const month = ('0' + (d.getMonth() + 1)).slice(-2);
+      const day = ('0' + d.getDate()).slice(-2);
+      return `${year}-${month}-${day}`;
+    }
+
+    // 計算並更新全域借還時段天數 Badge
+    function updateRangeBadge() {
+      const bEl = document.getElementById('global-borrow-date');
+      const rEl = document.getElementById('global-return-date');
+      const badgeEl = document.getElementById('global-range-badge');
+      const editBadgeEl = document.getElementById('edit-mode-range-badge');
+      if (!bEl || !rEl) return;
+
+      const bDate = new Date(bEl.value);
+      const rDate = new Date(rEl.value);
+      if (!isNaN(bDate) && !isNaN(rDate) && rDate >= bDate) {
+        const diffDays = Math.round((rDate - bDate) / (1000 * 60 * 60 * 24)) + 1;
+        const text = `共 ${diffDays} 天`;
+        if (badgeEl) badgeEl.innerText = text;
+        if (editBadgeEl) editBadgeEl.innerText = text;
+      } else {
+        if (badgeEl) badgeEl.innerText = '日期無效';
+        if (editBadgeEl) editBadgeEl.innerText = '日期無效';
+      }
+    }
+
+    // 當全域日期變更時觸發（偏好 1：即時過濾與重算時段庫存）
+    function handleGlobalDateChange() {
+      const gBorrowEl = document.getElementById('global-borrow-date');
+      const gReturnEl = document.getElementById('global-return-date');
+      if (!gBorrowEl || !gReturnEl) return;
+
+      if (gBorrowEl.value && gReturnEl.value && gReturnEl.value < gBorrowEl.value) {
+        alert('預計歸還日期不得早於借出日期！已自動調整為與借出日期相同。');
+        gReturnEl.value = gBorrowEl.value;
+      }
+
+      // 同步至借用申請彈窗內之日期欄位
+      const borrowEl = document.getElementById('borrow-date');
+      if (borrowEl) borrowEl.value = gBorrowEl.value;
+      const returnEl = document.getElementById('return-date');
+      if (returnEl) returnEl.value = gReturnEl.value;
+
+      // 同步至編輯模式面板日期欄位
+      const ebEl = document.getElementById('edit-mode-borrow-date');
+      if (ebEl && ebEl.value !== gBorrowEl.value) ebEl.value = gBorrowEl.value;
+      const erEl = document.getElementById('edit-mode-return-date');
+      if (erEl && erEl.value !== gReturnEl.value) erEl.value = gReturnEl.value;
+
+      updateRangeBadge();
+      recomputeRangeAvailability();
+      renderEquipmentCards();
+
+      if (editingOrderId) {
+        renderEditItemsQuickPanel();
+      }
+
+      validateCartAgainstAvailability();
+    }
+
+    // 編輯模式面板：日期變更連動
+    function handleEditModeDateChange() {
+      const ebEl = document.getElementById('edit-mode-borrow-date');
+      const erEl = document.getElementById('edit-mode-return-date');
+      const gbEl = document.getElementById('global-borrow-date');
+      const grEl = document.getElementById('global-return-date');
+      if (ebEl && gbEl) gbEl.value = ebEl.value;
+      if (erEl && grEl) grEl.value = erEl.value;
+      handleGlobalDateChange();
+    }
+
+    // 編輯模式面板：快捷延長歸還天數（陰乾通風防霉）
+    function quickExtendReturnDate(days) {
+      const erEl = document.getElementById('edit-mode-return-date');
+      const curDateStr = (erEl && erEl.value) || (document.getElementById('global-return-date') && document.getElementById('global-return-date').value);
+      if (!curDateStr) return;
+
+      const parts = curDateStr.split('-');
+      if (parts.length !== 3) return;
+      const curDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+      curDate.setDate(curDate.getDate() + days);
+
+      const year = curDate.getFullYear();
+      const month = String(curDate.getMonth() + 1).padStart(2, '0');
+      const day = String(curDate.getDate()).padStart(2, '0');
+      const newDateStr = `${year}-${month}-${day}`;
+
+      if (erEl) erEl.value = newDateStr;
+      const grEl = document.getElementById('global-return-date');
+      if (grEl) grEl.value = newDateStr;
+
+      handleGlobalDateChange();
+
+      const hintEl = document.getElementById('edit-mode-extend-hint');
+      if (hintEl) {
+        hintEl.style.display = 'block';
+        hintEl.innerHTML = `已將預計歸還日延長 ${days} 天至 <strong>${newDateStr}</strong>，全校檔期防撞驗證完成！`;
+        setTimeout(() => { hintEl.style.display = 'none'; }, 4500);
+      }
+    }
+
+    // 彈窗內部日期同步至全域日期
+    function syncModalDateToGlobal() {
+      const borrowEl = document.getElementById('borrow-date');
+      const returnEl = document.getElementById('return-date');
+      const gBorrowEl = document.getElementById('global-borrow-date');
+      const gReturnEl = document.getElementById('global-return-date');
+
+      if (borrowEl && returnEl && gBorrowEl && gReturnEl) {
+        if (borrowEl.value && returnEl.value && returnEl.value < borrowEl.value) {
+          alert('預計歸還日期不得早於借出日期！已自動調整為與借出日期相同。');
+          returnEl.value = borrowEl.value;
+        }
+        gBorrowEl.value = borrowEl.value;
+        gReturnEl.value = returnEl.value;
+
+        updateRangeBadge();
+        recomputeRangeAvailability();
+        renderEquipmentCards();
+        validateCartAgainstAvailability();
+      }
+    }
+
+    // 驗證並自動防呆調整購物車中品項數量（若因切換時段造成額度不足）
+    function validateCartAgainstAvailability() {
+      let adjusted = false;
+      Object.keys(cart).forEach(id => {
+        const item = inventoryData.find(x => x.id === id);
+        if (!item) return;
+        let maxAvail = item.available_qty;
+        if (editingOrderId && originalOrderData && Array.isArray(originalOrderData.items)) {
+          const orig = originalOrderData.items.find(x => x.id === id);
+          if (orig) maxAvail += orig.qty;
+        }
+        if (cart[id] > maxAvail) {
+          adjusted = true;
+          if (maxAvail <= 0) {
+            delete cart[id];
+          } else {
+            cart[id] = maxAvail;
+          }
+        }
+      });
+      if (adjusted) {
+        alert('【時段額度調配提醒】\n因您變更之預計借還時段與其他訂單重疊，購物車內部分裝備數量已自動調整為該時段最高可用上限。');
+        updateCartBar();
+        renderEquipmentCards();
+        if (editingOrderId) renderEditItemsQuickPanel();
+      }
+    }
+
+    // 載入未結案活躍訂單供檔期與時段防撞計算
+    function loadActiveOrdersSchedule() {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler((orders) => {
+            if (orders && Array.isArray(orders)) {
+              activeOrdersData = orders;
+              recomputeRangeAvailability();
+              renderEquipmentCards();
+            }
+          })
+          .withFailureHandler((err) => {
+            console.warn('載入檔期訂單失敗：', err);
+          })
+          .getActiveOrdersForSchedule();
+      } else {
+        // 離線展示用測試訂單
+        activeOrdersData = [
+          {
+            order_id: 'LOAN-20261001-001',
+            borrower_name: '李老師',
+            activity_name: '8A晴光班桃源谷體訓',
+            borrow_date: '2026-10-01',
+            return_date: '2026-10-05',
+            status: '已預約',
+            items: [
+              { id: 'EQ-001', name: '蜘蛛爐（藍袋組）', qty: 9 },
+              { id: 'EQ-006', name: '折疊鋁合金擋風板', qty: 5 }
+            ]
+          }
+        ];
+        recomputeRangeAvailability();
+      }
+    }
+
+    // 時段動態重疊演算法核心（無縫銜接：今天還、隔天即可借）
+    function recomputeRangeAvailability() {
+      const gBorrowEl = document.getElementById('global-borrow-date');
+      const gReturnEl = document.getElementById('global-return-date');
+      if (!gBorrowEl || !gReturnEl || !gBorrowEl.value || !gReturnEl.value) return;
+
+      const reqStart = gBorrowEl.value;
+      const reqEnd = gReturnEl.value;
+      if (reqEnd < reqStart) return;
+
+      // 產生查詢區間內所有日期的字串集合 (YYYY-MM-DD)
+      const dateList = [];
+      const cur = new Date(reqStart);
+      const end = new Date(reqEnd);
+      while (cur <= end) {
+        dateList.push(formatDate(cur));
+        cur.setDate(cur.getDate() + 1);
+      }
+
+      // 篩選出與目標時段重疊且非當前編輯單之未結案訂單
+      // 無縫銜接條件：!(orderEnd < reqStart || orderStart > reqEnd)
+      const overlappingOrders = activeOrdersData.filter(o => {
+        if (editingOrderId && o.order_id === editingOrderId) return false;
+        if (o.status === '已全部歸還') return false;
+        return !(o.return_date < reqStart || o.borrow_date > reqEnd);
+      });
+
+      // 對於每個裝備，計算在 dateList 內每一天的佔用量總和，取最大峰值 peakOccupancy
+      const peakOccupancyMap = {};
+
+      dateList.forEach(dayStr => {
+        const dayCounts = {};
+        overlappingOrders.forEach(order => {
+          if (order.borrow_date <= dayStr && dayStr <= order.return_date) {
+            if (Array.isArray(order.items)) {
+              order.items.forEach(it => {
+                dayCounts[it.id] = (dayCounts[it.id] || 0) + (Number(it.qty) || 0);
+              });
+            }
+          }
+        });
+        Object.keys(dayCounts).forEach(id => {
+          peakOccupancyMap[id] = Math.max(peakOccupancyMap[id] || 0, dayCounts[id]);
+        });
+      });
+
+      // 更新 inventoryData 中每個品項的 available_qty
+      inventoryData.forEach(item => {
+        const peakOccupied = peakOccupancyMap[item.id] || 0;
+        item.available_qty = Math.max(0, item.total_qty - peakOccupied);
+        item.peak_occupied = peakOccupied;
+      });
+    }
+
+    // 開啟檔期時程查詢彈窗
+    function openScheduleModal(itemId) {
+      currentScheduleItemId = itemId;
+      const item = inventoryData.find(x => x.id === itemId);
+      if (!item) return;
+
+      document.getElementById('modal-sched-title').innerText = `【${item.name}】檔期預約與借出時程表`;
+      document.getElementById('modal-sched-sub').innerText = `${item.category} ｜ 代碼：${item.id} ｜ 總儲備量：${item.total_qty} 件`;
+
+      const gBorrow = document.getElementById('global-borrow-date').value;
+      const gReturn = document.getElementById('global-return-date').value;
+      document.getElementById('modal-sched-query-range').innerText = `${gBorrow} ～ ${gReturn}`;
+      document.getElementById('modal-sched-query-avail').innerText = `${item.available_qty} 件`;
+
+      const listContainer = document.getElementById('modal-sched-orders-list');
+      if (!listContainer) return;
+
+      // 找出所有未歸還且含有此裝備的訂單
+      const itemOrders = activeOrdersData.filter(o => {
+        if (o.status === '已全部歸還') return false;
+        if (!Array.isArray(o.items)) return false;
+        return o.items.some(it => it.id === itemId && (Number(it.qty) || 0) > 0);
+      });
+
+      // 依借用開始日期排序
+      itemOrders.sort((a, b) => a.borrow_date.localeCompare(b.borrow_date));
+
+      if (itemOrders.length === 0) {
+        listContainer.innerHTML = `
+          <div style="text-align: center; padding: 28px 16px; color: var(--accent-green); background: #F8FBF8;">
+            <div style="font-size: 1.05rem; font-weight: 700; margin-bottom: 4px;">🌿 近期無任何借出或預約紀錄</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted);">全額 ${item.total_qty} 件皆在庫，各時段均可自由借用！</div>
+          </div>
+        `;
+      } else {
+        const todayStr = formatDate(new Date());
+        let html = '';
+        itemOrders.forEach(o => {
+          const it = o.items.find(x => x.id === itemId);
+          const qty = it ? it.qty : 0;
+          const isOverlap = !(o.return_date < gBorrow || o.borrow_date > gReturn);
+          const isCurrentOrder = (editingOrderId && o.order_id === editingOrderId);
+
+          // 判定狀態標籤（借出中 vs 已預約）
+          const isBorrowed = (o.borrow_date <= todayStr);
+          const tagClass = isBorrowed ? 'status-tag-borrowed' : 'status-tag-reserved';
+          const tagText = isBorrowed ? '借出中' : '已預約';
+
+          html += `
+            <div class="schedule-order-row ${isOverlap ? 'overlap' : ''}">
+              <div style="flex: 1; min-width: 200px;">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <span class="status-tag ${tagClass}">${tagText}</span>
+                  <strong style="color: var(--primary-color); font-size: 0.95rem;">${o.borrow_date} ～ ${o.return_date}</strong>
+                  ${isOverlap ? '<span style="color: var(--accent-orange); font-size: 0.78rem; font-weight: 700; background: #FFF3E0; border: 1px solid #FFE0B2; padding: 1px 6px; border-radius: 4px;">⚠️ 與目前選取時段重疊</span>' : '<span style="color: var(--accent-green); font-size: 0.78rem; font-weight: 600;">✓ 無時段衝突</span>'}
+                  ${isCurrentOrder ? '<span style="background: var(--accent-amber); color: #FFFFFF; font-size: 0.75rem; padding: 1px 6px; border-radius: 4px; font-weight: 700;">本單原訂單</span>' : ''}
+                </div>
+                <div style="font-size: 0.84rem; color: var(--text-muted); margin-top: 4px;">
+                  借用人：<strong style="color: var(--text-main);">${escapeHtml(o.borrower_name || '老師')}</strong>
+                  ${o.activity_name ? `（${escapeHtml(o.activity_name)}）` : ''} ｜ 單號：${o.order_id}
+                </div>
+              </div>
+              <div style="text-align: right; margin-left: 12px; flex-shrink: 0;">
+                <div style="font-size: 0.8rem; color: var(--text-muted);">借用數量</div>
+                <div style="font-weight: 700; font-size: 1.15rem; color: ${isOverlap ? 'var(--accent-orange)' : 'var(--primary-color)'};">
+                  ${qty} <span style="font-size: 0.85rem; font-weight: normal;">件</span>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+        listContainer.innerHTML = html;
+      }
+
+      document.getElementById('modal-schedule').classList.add('active');
+    }
+
+    function closeScheduleModal() {
+      const m = document.getElementById('modal-schedule');
+      if (m) m.classList.remove('active');
+    }
+
+    // 開啟裝備借用協調申請彈窗
+    function openCoordinationModal(prefillItemId) {
+      const gBorrow = document.getElementById('global-borrow-date').value;
+      const gReturn = document.getElementById('global-return-date').value;
+      const rangeDisplay = document.getElementById('coord-range-display');
+      const badgeDisplay = document.getElementById('coord-duration-badge');
+
+      if (rangeDisplay) rangeDisplay.innerText = `${gBorrow} ～ ${gReturn}`;
+      if (badgeDisplay) {
+        const bDate = new Date(gBorrow);
+        const rDate = new Date(gReturn);
+        if (!isNaN(bDate) && !isNaN(rDate) && rDate >= bDate) {
+          const diffDays = Math.round((rDate - bDate) / (1000 * 60 * 60 * 24)) + 1;
+          badgeDisplay.innerText = `共 ${diffDays} 天`;
+        } else {
+          badgeDisplay.innerText = `共 -- 天`;
+        }
+      }
+
+      // 初始化或更新裝備下拉選單選項
+      const selectEl = document.getElementById('coord-add-item-select');
+      if (selectEl) {
+        let optHtml = '<option value="">-- 請選擇欲協調之裝備 --</option>';
+        inventoryData.forEach(it => {
+          if (it.restriction && it.restriction.includes('故障')) return; // 跳過故障品項
+          optHtml += `<option value="${it.id}">【${it.category}】${it.name} (時段可用：${it.available_qty}/${it.total_qty})</option>`;
+        });
+        selectEl.innerHTML = optHtml;
+      }
+
+      // 清空或帶入指定品項
+      coordItems = [];
+      if (prefillItemId) {
+        const target = inventoryData.find(x => x.id === prefillItemId);
+        if (target) {
+          coordItems.push({
+            id: target.id,
+            name: target.name,
+            qty: 1,
+            category: target.category,
+            current_avail: target.available_qty
+          });
+        }
+      }
+      renderCoordinationItems();
+
+      // 若有開啟檔期彈窗，可一併關閉檔期彈窗
+      closeScheduleModal();
+
+      document.getElementById('modal-coordination').classList.add('active');
+    }
+
+    function closeCoordinationModal() {
+      const m = document.getElementById('modal-coordination');
+      if (m) m.classList.remove('active');
+    }
+
+    // 渲染協調清單表格
+    function renderCoordinationItems() {
+      const tbody = document.getElementById('coord-items-tbody');
+      if (!tbody) return;
+
+      if (coordItems.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="4" style="text-align: center; padding: 20px; color: var(--text-muted); background: #FAF9F6;">
+              尚未加入任何需求裝備，請由上方選單挑選裝備後點擊「＋ 加入品項」
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      let html = '';
+      coordItems.forEach(it => {
+        const liveItem = inventoryData.find(x => x.id === it.id);
+        const avail = liveItem ? liveItem.available_qty : 0;
+        const total = liveItem ? liveItem.total_qty : 0;
+        it.current_avail = avail;
+
+        html += `
+          <tr>
+            <td>
+              <strong>${escapeHtml(it.name)}</strong>
+              <div style="font-size: 0.76rem; color: var(--text-muted);">${escapeHtml(it.id)} ｜ 總儲備量 ${total} 件</div>
+            </td>
+            <td style="text-align: center; font-size: 0.88rem; font-weight: 600; color: ${avail === 0 ? 'var(--accent-orange)' : 'var(--accent-green)'};">
+              ${avail} 件
+            </td>
+            <td style="text-align: center;">
+              <div class="qty-control" style="justify-content: center;">
+                <button type="button" class="qty-btn" style="width:26px; height:26px;" onclick="updateCoordItemQty('${it.id}', -1)" ${it.qty <= 1 ? 'disabled' : ''}>-</button>
+                <span class="qty-number" style="min-width:24px; font-size:0.95rem;">${it.qty}</span>
+                <button type="button" class="qty-btn" style="width:26px; height:26px;" onclick="updateCoordItemQty('${it.id}', 1)">+</button>
+              </div>
+            </td>
+            <td style="text-align: center;">
+              <button type="button" class="btn-action" style="padding: 2px 8px; font-size: 0.78rem; background: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2;" onclick="removeCoordinationItem('${it.id}')">移除</button>
+            </td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+
+    function addCoordinationItemFromSelect() {
+      const selectEl = document.getElementById('coord-add-item-select');
+      if (!selectEl || !selectEl.value) {
+        alert('請先從下拉選單中選擇欲申請協調的裝備！');
+        return;
+      }
+      const itemId = selectEl.value;
+      const target = inventoryData.find(x => x.id === itemId);
+      if (!target) return;
+
+      const existing = coordItems.find(x => x.id === itemId);
+      if (existing) {
+        existing.qty += 1;
+      } else {
+        coordItems.push({
+          id: target.id,
+          name: target.name,
+          qty: 1,
+          category: target.category,
+          current_avail: target.available_qty
+        });
+      }
+      selectEl.value = '';
+      renderCoordinationItems();
+    }
+
+    function updateCoordItemQty(itemId, delta) {
+      const existing = coordItems.find(x => x.id === itemId);
+      if (existing) {
+        existing.qty = Math.max(1, existing.qty + delta);
+        renderCoordinationItems();
+      }
+    }
+
+    function removeCoordinationItem(itemId) {
+      coordItems = coordItems.filter(x => x.id !== itemId);
+      renderCoordinationItems();
+    }
+
+    // 送出協調申請表單
+    function submitCoordinationForm() {
+      const name = (document.getElementById('coord-borrower-name').value || '').trim();
+      const className = (document.getElementById('coord-class-name').value || '').trim();
+      const rawEmail = (document.getElementById('coord-email').value || '').trim();
+      const email = resolveSchoolEmail(rawEmail);
+      const phone = (document.getElementById('coord-phone').value || '').trim();
+      const actType = document.getElementById('coord-activity-type').value;
+      const actName = (document.getElementById('coord-activity-name').value || '').trim();
+      const reason = (document.getElementById('coord-reason').value || '').trim();
+
+      const gBorrow = document.getElementById('global-borrow-date').value;
+      const gReturn = document.getElementById('global-return-date').value;
+
+      if (!name) { alert('請填寫申請老師姓名！'); return; }
+      if (!className) { alert('請填寫所屬班級！'); return; }
+      if (!rawEmail) { alert('請填寫通知 Email 帳號！'); return; }
+      if (!email.includes('@waldorf.ilc.edu.tw') && email !== 'guan7chen@gmail.com' && !email.includes('@tmail.ilc.edu.tw')) {
+        alert('通知 Email 必須為學校信箱（@waldorf.ilc.edu.tw）！');
+        return;
+      }
+      if (!phone) { alert('請填寫聯絡電話！'); return; }
+      if (!actName) { alert('請填寫行程地點與活動內容！'); return; }
+      if (coordItems.length === 0) { alert('請至少加入一項欲申請協調之裝備品項！'); return; }
+      if (!reason) { alert('請簡述協調原因與替代方案彈性說明，以利冠錡老師協調！'); return; }
+
+      const payload = {
+        borrower_name: name,
+        class_name: className,
+        email: email,
+        phone: phone,
+        borrow_date: gBorrow,
+        return_date: gReturn,
+        activity_type: actType,
+        activity_name: actName,
+        items: coordItems,
+        reason: reason
+      };
+
+      const btnSubmit = document.getElementById('btn-submit-coord');
+      if (btnSubmit) {
+        btnSubmit.disabled = true;
+        btnSubmit.innerText = '正在提交協調申請...';
+      }
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            if (btnSubmit) {
+              btnSubmit.disabled = false;
+              btnSubmit.innerText = '確認送出協調申請';
+            }
+            if (res.success) {
+              alert(`【協調申請已成功送達】\n\n申請單號：${res.request_id}\n\n系統已發送協調分析通知信給陳冠錡老師，並同步副知您的學校信箱。\n冠錡老師將依活動性質與安全順位進行協調評估後與您聯繫。`);
+              closeCoordinationModal();
+              document.getElementById('coord-reason').value = '';
+              coordItems = [];
+            } else {
+              alert('協調申請送出失敗：' + res.message);
+            }
+          })
+          .withFailureHandler((err) => {
+            if (btnSubmit) {
+              btnSubmit.disabled = false;
+              btnSubmit.innerText = '確認送出協調申請';
+            }
+            alert('系統通訊錯誤：' + err);
+          })
+          .submitCoordinationRequest(payload);
+      } else {
+        setTimeout(() => {
+          if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerText = '確認送出協調申請';
+          }
+          alert(`【離線測試模式：協調申請已模擬送出】\n\n申請單號：REQ-20261001-001\n申請班級：${className}\n行程地點：${actName}\n已模擬發送通知信給冠錡老師！`);
+          closeCoordinationModal();
+          coordItems = [];
+        }, 600);
+      }
+    }
+
+    function loadInventoryData() {
+      // 1. 立即以內嵌裝備資料完成渲染，0秒秒開，絕不卡在載入畫面！
+      if (!inventoryData || inventoryData.length === 0) {
+        inventoryData = EMBEDDED_INVENTORY.map(item => ({
+          ...item,
+          borrowed_qty: 0,
+          available_qty: item.total_qty
+        }));
+        recomputeRangeAvailability();
+        renderInventory(inventoryData);
+      }
+
+      // 2. 若在 GAS 線上環境，背景非同步查詢最新借出數量 (不阻擋畫面且不覆蓋本地規格)
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler((serverItems) => {
+            if (serverItems && Array.isArray(serverItems) && serverItems.length > 0) {
+              const serverMap = {};
+              serverItems.forEach(s => { if (s && s.id) serverMap[s.id] = s; });
+
+              inventoryData = EMBEDDED_INVENTORY.map(localItem => {
+                const remote = serverMap[localItem.id];
+                if (remote) {
+                  const total = (typeof remote.total_qty === 'number' && remote.total_qty >= 0) ? remote.total_qty : localItem.total_qty;
+                  const borrowed = (typeof remote.borrowed_qty === 'number' && remote.borrowed_qty >= 0) ? remote.borrowed_qty : 0;
+                  return {
+                    ...localItem,
+                    total_qty: total,
+                    borrowed_qty: borrowed,
+                    available_qty: Math.max(0, total - borrowed),
+                    weight: (remote.weight && remote.weight.trim()) ? remote.weight : (localItem.weight || ''),
+                    dimensions: (remote.dimensions && remote.dimensions.trim()) ? remote.dimensions : (localItem.dimensions || '')
+                  };
+                }
+                return localItem;
+              });
+
+              // 若有線上新增品項，一併保留
+              const embeddedIds = new Set(EMBEDDED_INVENTORY.map(it => it.id));
+              const extraItems = serverItems.filter(it => it && it.id && !embeddedIds.has(it.id));
+              if (extraItems.length > 0) {
+                inventoryData = [...inventoryData, ...extraItems];
+              }
+
+              recomputeRangeAvailability();
+              renderEquipmentCards();
+            }
+          })
+          .withFailureHandler((err) => {
+            console.warn('背景同步試算表借用數量失敗，維持本地資料：', err);
+          })
+          .getInventory();
+      }
+    }
+
+    function renderInventory(items) {
+      inventoryData = items;
+      renderEquipmentCards();
+    }
+
+    function updateCategoryCounts() {
+      if (!inventoryData || inventoryData.length === 0) return;
+      const allCount = inventoryData.length;
+      const catCounts = {};
+      inventoryData.forEach(it => {
+        catCounts[it.category] = (catCounts[it.category] || 0) + 1;
+      });
+
+      const buttons = document.querySelectorAll('.cat-btn');
+      buttons.forEach(btn => {
+        const text = btn.innerText;
+        if (text.includes('全部分類')) {
+          btn.innerText = `全部分類 (${allCount})`;
+        } else if (text.includes('炊事裝備')) {
+          btn.innerText = `炊事裝備 (${catCounts['炊事裝備'] || 0})`;
+        } else if (text.includes('睡眠裝備')) {
+          btn.innerText = `睡眠裝備 (${catCounts['睡眠裝備'] || 0})`;
+        } else if (text.includes('飲水裝備')) {
+          btn.innerText = `飲水裝備 (${catCounts['飲水裝備'] || 0})`;
+        } else if (text.includes('導航裝備')) {
+          btn.innerText = `導航裝備 (${catCounts['導航裝備'] || 0})`;
+        }
+      });
+    }
+
+    // 渲染裝備卡片（支援時段動態額度呈現與檔期查詢按鈕）
+    function renderEquipmentCards() {
+      updateCategoryCounts();
+      const container = document.getElementById('equipment-grid');
+      if (!container) return;
+      const searchEl = document.getElementById('search-input');
+      const searchKeyword = searchEl ? searchEl.value.trim().toLowerCase() : '';
+
+      const filtered = inventoryData.filter(item => {
+        const matchCat = (activeCategory === 'all' || item.category === activeCategory);
+        const matchKw = !searchKeyword ||
+          item.name.toLowerCase().includes(searchKeyword) ||
+          item.spec.toLowerCase().includes(searchKeyword) ||
+          item.category.toLowerCase().includes(searchKeyword);
+        return matchCat && matchKw;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-muted);">沒有符合搜尋條件的裝備。</div>`;
+        return;
+      }
+
+      let html = '';
+      filtered.forEach(item => {
+        const isRestricted = item.restriction && (item.restriction.includes('嚴禁外借') || item.restriction.includes('故障'));
+        const avail = Math.max(0, item.available_qty);
+        const selectedQty = cart[item.id] || 0;
+        const origItem = (editingOrderId && originalOrderData && Array.isArray(originalOrderData.items))
+          ? originalOrderData.items.find(x => x.id === item.id)
+          : null;
+        const origQty = origItem ? origItem.qty : 0;
+        const effectiveAvail = item.available_qty + origQty;
+
+        let badgeClass = 'stock-avail';
+        let badgeText = `該時段可借 ${item.available_qty} 件（總備 ${item.total_qty} 件）`;
+        if (editingOrderId && origQty > 0) {
+          badgeText = `該時段可借 ${item.available_qty} 件（原借 ${origQty} 件）`;
+        }
+
+        if (isRestricted || item.total_qty === 0) {
+          badgeClass = 'stock-empty';
+          badgeText = '故障列管 · 暫停借用';
+        } else if (effectiveAvail === 0) {
+          badgeClass = 'stock-empty';
+          badgeText = '該時段已額滿';
+        } else if (item.restriction && item.restriction.includes('限制')) {
+          badgeClass = 'stock-restricted';
+          badgeText = `限教職員 · 剩餘 ${item.available_qty} 件（總備 ${item.total_qty} 件）`;
+        }
+
+        const disablePlus = (isRestricted || effectiveAvail === 0 || selectedQty >= effectiveAvail);
+
+        html += `
+          <div class="eq-card">
+            <div>
+              <div class="eq-header">
+                <span class="eq-category">${item.category}</span>
+                <span class="stock-badge ${badgeClass}">${badgeText}</span>
+              </div>
+              <div class="eq-title">${item.name}</div>
+              <div class="eq-meta-pills" style="display: flex; gap: 6px; flex-wrap: wrap; margin: 4px 0 8px 0;">
+                ${item.weight ? `<span style="display: inline-flex; align-items: center; font-size: 0.78rem; background-color: #EBF3FA; color: #1A5276; border: 1px solid #D4E6F1; border-radius: 4px; padding: 2px 7px; font-weight: 600;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>重量：${escapeHtml(item.weight)}</span>` : ''}
+                ${item.dimensions ? `<span style="display: inline-flex; align-items: center; font-size: 0.78rem; background-color: #FEF9E7; color: #7D6608; border: 1px solid #F9E79F; border-radius: 4px; padding: 2px 7px; font-weight: 600;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>規格：${escapeHtml(item.dimensions)}</span>` : ''}
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; margin-bottom: 12px;">
+                <button type="button" class="btn-info-link" style="margin: 0;" onclick="openEquipmentModal('${item.id}')">
+                  <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                  裝備功能介紹
+                </button>
+                <button type="button" class="btn-schedule-link" onclick="openScheduleModal('${item.id}')">
+                  📅 檔期時程查詢
+                </button>
+                ${(effectiveAvail === 0 && !isRestricted) ? `
+                <button type="button" class="btn-coord-link" onclick="openCoordinationModal('${item.id}')">
+                  🤝 申請檔期協調
+                </button>
+                ` : ''}
+              </div>
+              ${item.accessories ? `
+                <div style="font-size: 0.8rem; color: #1B5E20; background-color: #F1F8F5; border: 1px solid #C8E6C9; border-radius: 6px; padding: 5px 9px; margin-bottom: 10px; line-height: 1.4;">
+                  <span style="font-weight: 700;">隨附配件：</span>${escapeHtml(item.accessories)}
+                </div>
+              ` : ''}
+              ${isRestricted && item.restriction ? `<div class="eq-note" style="margin-bottom:12px;">${escapeHtml(item.restriction)}</div>` : ''}
+            </div>
+            <div class="eq-footer">
+              <span style="font-size: 0.88rem; color: var(--text-muted);">借用數量</span>
+              <div class="qty-control">
+                <button class="qty-btn" onclick="updateCart('${item.id}', -1)" ${selectedQty === 0 ? 'disabled' : ''}>-</button>
+                <span class="qty-number">${selectedQty}</span>
+                <button class="qty-btn" onclick="updateCart('${item.id}', 1)" ${disablePlus ? 'disabled' : ''}>+</button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+      updateCartBar();
+    }
+
+    // 購物車數量調整
+    function updateCart(id, delta) {
+      const item = inventoryData.find(it => it.id === id);
+      if (!item) return;
+
+      const current = cart[id] || 0;
+      const next = current + delta;
+
+      // 若處於修改模式，原借數量算入可調用上限
+      let maxAvail = item.available_qty;
+      if (editingOrderId && originalOrderData && Array.isArray(originalOrderData.items)) {
+        const origItem = originalOrderData.items.find(x => x.id === id);
+        if (origItem) {
+          maxAvail = item.available_qty + origItem.qty;
+        }
+      }
+
+      if (next <= 0) {
+        delete cart[id];
+      } else if (next <= maxAvail) {
+        cart[id] = next;
+      } else {
+        alert(`【${item.name}】此時段在庫可用額度不足（最多可調至 ${maxAvail} 件）！`);
+        return;
+      }
+
+      renderEquipmentCards();
+      if (editingOrderId) {
+        renderEditItemsQuickPanel();
+      }
+    }
+
+    // 更新懸浮購物車條
+    function updateCartBar() {
+      const bar = document.getElementById('cart-bar');
+      if (!bar) return;
+      const keys = Object.keys(cart);
+      if (keys.length === 0) {
+        bar.classList.add('hidden');
+        return;
+      }
+
+      let totalPieces = 0;
+      keys.forEach(k => totalPieces += cart[k]);
+
+      document.getElementById('cart-summary-text').innerText =
+        `已選取 ${keys.length} 項裝備（共 ${totalPieces} 件）`;
+      bar.classList.remove('hidden');
+    }
+
+    // 分類篩選
+    function filterCategory(cat) {
+      activeCategory = cat;
+      const buttons = document.querySelectorAll('.category-pills .cat-btn');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      renderEquipmentCards();
+    }
+
+    // 關鍵字搜尋
+    function handleSearch() {
+      renderEquipmentCards();
+    }
+
+    // 打開借用確認彈窗
+    
+    // 裝備詳細功能介紹彈窗
+    function openEquipmentModal(id) {
+      const item = inventoryData.find(x => x.id === id);
+      if (!item) return;
+      document.getElementById('modal-eq-title').innerText = item.name;
+      const avail = Math.max(0, item.available_qty);
+      document.getElementById('modal-eq-sub').innerText = `${item.category} ｜ 代碼：${item.id} ｜ 該時段可借：${avail} 件（總備 ${item.total_qty} 件）`;
+
+      let bodyHtml = `
+        <div class="modal-detail-section">
+          <div class="modal-section-title">
+            <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            規格與功能介紹
+          </div>
+          <div class="modal-section-content">${escapeHtml(item.spec || '無特別規格說明')}</div>
+        </div>
+        ${(item.weight || item.dimensions) ? `
+          <div class="modal-detail-section" style="background-color: #F8FBF8; border: 1px solid #C8E6C9; border-radius: 6px; padding: 10px 14px; margin-bottom: 14px;">
+            <div style="display: flex; gap: 20px; flex-wrap: wrap; font-size: 0.88rem;">
+              ${item.weight ? `<div><strong style="color: #1B5E20;">裝備重量：</strong><span style="font-weight:700; color:#1A5276;">${escapeHtml(item.weight)}</span></div>` : ''}
+              ${item.dimensions ? `<div><strong style="color: #1B5E20;">裝備規格：</strong><span style="font-weight:700; color:#7D6608;">${escapeHtml(item.dimensions)}</span></div>` : ''}
+            </div>
+          </div>
+        ` : ''}
+      `;
+
+      if (item.accessories) {
+        bodyHtml += `
+          <div class="modal-detail-section">
+            <div class="modal-section-title" style="color: #2E7D32;">
+              <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+              裝備隨附配件（獨立注記・出庫清點）
+            </div>
+            <div class="modal-section-content" style="background-color: #F1F8F5; border-left: 3px solid #2E7D32; color: #1B5E20; font-weight: 600;">${escapeHtml(item.accessories)}</div>
+          </div>
+        `;
+      }
+
+      if (item.restriction) {
+        bodyHtml += `
+          <div class="modal-detail-section">
+            <div class="modal-section-title" style="color: var(--accent-orange);">
+              <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+              現況列管與注意事項
+            </div>
+            <div class="modal-section-content" style="background-color: #FFF9F5; border-left: 3px solid var(--accent-orange); color: #8A3B00;">${escapeHtml(item.restriction)}</div>
+          </div>
+        `;
+      }
+
+      if (item.inspection) {
+        bodyHtml += `
+          <div class="modal-detail-section">
+            <div class="modal-section-title">
+              <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+              出庫／領裝檢查重點（本體結構與功能檢測）
+            </div>
+            <div class="modal-section-content">${escapeHtml(item.inspection)}</div>
+          </div>
+        `;
+      }
+
+      if (item.safety) {
+        bodyHtml += `
+          <div class="modal-detail-section">
+            <div class="modal-section-title">
+              <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              野外使用安全注意事項
+            </div>
+            <div class="modal-section-content">${escapeHtml(item.safety)}</div>
+          </div>
+        `;
+      }
+
+      if (item.clean) {
+        bodyHtml += `
+          <div class="modal-detail-section">
+            <div class="modal-section-title">
+              <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+              使用後清理與防霉保養
+            </div>
+            <div class="modal-section-content">${escapeHtml(item.clean)}</div>
+          </div>
+        `;
+      }
+
+      document.getElementById('modal-eq-body').innerHTML = bodyHtml;
+      document.getElementById('eq-detail-modal').classList.add('active');
+    }
+
+    function closeEquipmentModal() {
+      const modal = document.getElementById('eq-detail-modal');
+      if (modal) modal.classList.remove('active');
+    }
+
+    function openBorrowModal() {
+      const tbody = document.getElementById('modal-items-tbody');
+      tbody.innerHTML = '';
+
+      Object.keys(cart).forEach(id => {
+        const item = inventoryData.find(it => it.id === id);
+        if (!item) return;
+        const qty = cart[id];
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${item.name}</strong><br><span style="font-size:0.75rem; color:#888;">${item.category}</span></td>
+          <td style="text-align:center; font-weight:700; color:var(--primary-color);">${qty}</td>
+          <td style="text-align:center;"><button style="color:red; background:none; border:none; cursor:pointer;" onclick="removeItemFromModal('${id}')">移除</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      renderDynamicAgreements();
+      document.getElementById('borrow-modal').classList.add('active');
+    }
+
+    function renderDynamicAgreements() {
+      const container = document.getElementById('dynamic-agreements-container');
+      if (!container) return;
+
+      const cartItemIds = Object.keys(cart);
+      const cartItems = cartItemIds.map(id => inventoryData.find(it => it.id === id)).filter(Boolean);
+
+      const hasStove = cartItems.some(it => it.type === 'stove' || it.name.includes('爐') || it.name.includes('擋風板') || it.name.includes('手套'));
+      const hasAlumPot = cartItems.some(it => it.name.includes('鍍鋁'));
+      const hasCookware = cartItems.some(it => (it.type === 'cookware' || it.name.includes('鍋') || it.name.includes('臉盆')) && !it.name.includes('鍍鋁'));
+      const hasTentOrTarp = cartItems.some(it => it.type === 'tent' || it.type === 'tarp' || it.name.includes('帳') || it.name.includes('天幕') || it.name.includes('地布') || it.name.includes('帆布') || it.name.includes('營釘'));
+      const hasWater = cartItems.some(it => it.type === 'water' || it.name.includes('水袋') || it.name.includes('濾水'));
+      const hasCompass = cartItems.some(it => it.type === 'compass' || it.name.includes('指北針'));
+
+      const agreements = [];
+
+      // 1. 瓦斯爐具與炊事用火安全
+      if (hasStove) {
+        agreements.push({
+          id: 'pact-stove',
+          title: '瓦斯爐具使用與安全承諾',
+          text: '我承諾使用瓦斯爐具時先引火再開微量瓦斯（火等瓦斯），瓦斯罐一律正立平放；擋風板不包覆瓦斯罐；卡式爐絕不使用覆蓋瓦斯倉之大鍋；使用後充分冷卻再拆卸瓦斯罐分開收納。'
+        });
+      }
+
+      // 2. 鍍鋁鍋具維護
+      if (hasAlumPot) {
+        agreements.push({
+          id: 'pact-alumpot',
+          title: '鍍鋁套鍋洗滌與防刮承諾',
+          text: '我承諾鍍鋁套鍋絕不使用鋼刷或綠色菜瓜布清洗，嚴格材質分流僅以專用黃色海綿清洗；烹煮嚴禁空燒、不使用金屬餐具刮傷鍋面保護層。'
+        });
+      }
+
+      // 3. 不鏽鋼套鍋與炊具清潔
+      if (hasCookware) {
+        agreements.push({
+          id: 'pact-cookware',
+          title: '套鍋炊具清潔與收納承諾',
+          text: '我承諾套鍋炊具嚴禁空燒，使用後徹底洗淨並以乾布完全擦乾，依大中小規格整齊套疊收納入網袋。'
+        });
+      }
+
+      // 4. 帳篷 / 天幕 / 地布防霉乾燥
+      if (hasTentOrTarp) {
+        agreements.push({
+          id: 'pact-fabric',
+          title: '帳篷・天幕・地布防霉乾燥承諾',
+          text: '我承諾帳篷、天幕、地布返校後確實完全陰乾風乾，絕不潮濕密封封存（嚴禁濕收密封超過 48 小時）；內帳脫鞋進入，帳內嚴禁點火；地布抖落泥沙擦淨曬乾。'
+        });
+      }
+
+      // 5. 水袋與濾水器清潔保養
+      if (hasWater) {
+        agreements.push({
+          id: 'pact-water',
+          title: '水袋與淨水器清潔保養承諾',
+          text: '我承諾水袋開口朝下倒掛徹底瀝乾；濾水器依原廠指引保養（BeFree 僅水中輕晃除泥絕不刷捏、MSR 陶瓷濾芯全拆解徹底陰乾 3–5 天），完全乾燥後歸庫。'
+        });
+      }
+
+      // 6. 定向指北針防消磁
+      if (hasCompass) {
+        agreements.push({
+          id: 'pact-compass',
+          title: '定向地圖指北針防消磁承諾',
+          text: '我承諾指北針存放時嚴禁靠近強力磁鐵、音響喇叭與大電流電器，避免磁針消磁或極性反轉。'
+        });
+      }
+
+      // 7. 最後一個承諾：預設必須存在，主動如實告知
+      agreements.push({
+        id: 'pact-mandatory',
+        title: '裝備狀況主動告知承諾（全體必填）',
+        text: '我承諾裝備使用期間若有任何零件遺失、損壞、異常或操作疑慮，歸還點交時主動如實告知負責人陳冠錡老師，絕不隱匿，共同維護戶外教學裝備品質與後續使用者安全。'
+      });
+
+      let html = '';
+      agreements.forEach((pact) => {
+        html += `
+          <label class="checkbox-label" style="margin-bottom: 9px; align-items: flex-start; cursor: pointer; padding: 7px 10px; border-radius: 6px; background-color: #FFFFFF; border: 1px solid #E0E0E0;">
+            <input type="checkbox" class="pact-checkbox" id="${pact.id}" onchange="checkAgreementsValidity()" style="margin-top: 3px; margin-right: 8px; transform: scale(1.15); cursor: pointer;">
+            <span style="line-height: 1.45; font-size: 0.84rem; color: #2C3E50;">
+              <strong style="color: var(--primary-color);">【${pact.title}】</strong> ${escapeHtml(pact.text)}
+            </span>
+          </label>
+        `;
+      });
+
+      container.innerHTML = html;
+      checkAgreementsValidity();
+    }
+
+    function checkAgreementsValidity() {
+      const checkboxes = document.querySelectorAll('#dynamic-agreements-container input.pact-checkbox');
+      const allChecked = checkboxes.length > 0 && Array.from(checkboxes).every(cb => cb.checked);
+      const btn = document.getElementById('btn-submit-loan');
+      if (btn) {
+        if (allChecked) {
+          btn.disabled = false;
+          btn.style.opacity = '1';
+          btn.style.cursor = 'pointer';
+          btn.title = '確認送出並產出檢核單';
+        } else {
+          btn.disabled = true;
+          btn.style.opacity = '0.45';
+          btn.style.cursor = 'not-allowed';
+          btn.title = '請先逐項勾選同意上方所有借用承諾事項';
+        }
+      }
+    }
+
+    function removeItemFromModal(id) {
+      delete cart[id];
+      renderEquipmentCards();
+      if (Object.keys(cart).length === 0) {
+        closeBorrowModal();
+      } else {
+        openBorrowModal();
+      }
+    }
+
+    function closeBorrowModal() {
+      document.getElementById('borrow-modal').classList.remove('active');
+    }
+
+    // ===== 申請人查詢與修改借用單功能 =====
+    function openLookupModal() {
+      document.getElementById('lookup-order-id').value = '';
+      document.getElementById('lookup-email').value = '';
+      document.getElementById('lookup-modal').classList.add('active');
+    }
+
+    function closeLookupModal() {
+      document.getElementById('lookup-modal').classList.remove('active');
+    }
+
+    function submitLookupOrder() {
+      const orderId = document.getElementById('lookup-order-id').value.trim();
+      const rawEmail = document.getElementById('lookup-email').value.trim();
+      const email = resolveSchoolEmail(rawEmail);
+
+      if (!orderId) {
+        alert('請輸入借用單號！');
+        document.getElementById('lookup-order-id').focus();
+        return;
+      }
+      if (!rawEmail) {
+        alert('請輸入申請人 Email 帳號！');
+        document.getElementById('lookup-email').focus();
+        return;
+      }
+
+      const btn = document.getElementById('btn-submit-lookup');
+      btn.innerText = '比對查詢中...';
+      btn.disabled = true;
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            btn.innerText = '查詢並開始修改';
+            btn.disabled = false;
+            if (res.success && res.order) {
+              closeLookupModal();
+              enterEditMode(res.order);
+            } else {
+              alert('查詢失敗：' + (res.message || '查無此借用單或信箱不符！'));
+            }
+          })
+          .withFailureHandler((err) => {
+            btn.innerText = '查詢並開始修改';
+            btn.disabled = false;
+            alert('查詢系統錯誤：' + err);
+          })
+          .getOrderByApplicant(orderId, email);
+      } else {
+        // 離線預覽模擬
+        setTimeout(() => {
+          btn.innerText = '查詢並開始修改';
+          btn.disabled = false;
+          closeLookupModal();
+          enterEditMode({
+            order_id: orderId,
+            borrower_name: '陳冠錡',
+            activity_name: '八年級野外探索',
+            email: email,
+            phone: '0912-345678',
+            borrow_date: '2026-09-15',
+            return_date: '2026-09-18',
+            items: [
+              { id: 'EQ-001', name: '蜘蛛爐（藍袋組）', qty: 2 },
+              { id: 'EQ-006', name: '折疊鋁合金擋風板', qty: 2 }
+            ],
+            status: '借出中'
+          });
+        }, 500);
+      }
+    }
+
+    function loadOrderForEdit(orderId, email) {
+      cleanAppUrlParams();
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            if (res.success && res.order) {
+              enterEditMode(res.order);
+            } else {
+              cleanAppUrlParams();
+              handleClosedOrderAttempt(orderId, res.message);
+              loadInventoryData();
+              loadActiveOrdersSchedule();
+            }
+          })
+          .withFailureHandler((err) => {
+            cleanAppUrlParams();
+            handleClosedOrderAttempt(orderId, '載入系統錯誤：' + err);
+            loadInventoryData();
+            loadActiveOrdersSchedule();
+          })
+          .getOrderByApplicant(orderId, email);
+      } else {
+        enterEditMode({
+          order_id: orderId,
+          borrower_name: '陳冠錡',
+          activity_name: '八年級野外探索',
+          email: email || 'guan7chen@gmail.com',
+          phone: '0912-345678',
+          borrow_date: '2026-09-15',
+          return_date: '2026-09-18',
+          items: [
+            { id: 'EQ-001', name: '蜘蛛爐（藍袋組）', qty: 2 },
+            { id: 'EQ-006', name: '折疊鋁合金擋風板', qty: 2 }
+          ],
+          status: '借出中'
+        });
+      }
+    }
+
+    function enterEditMode(order) {
+      editingOrderId = order.order_id;
+      originalOrderData = JSON.parse(JSON.stringify(order));
+
+      // 切換回借用分頁
+      switchTab('borrow');
+
+      // 填入購物車
+      cart = {};
+      if (Array.isArray(order.items)) {
+        order.items.forEach(it => {
+          cart[it.id] = it.qty;
+        });
+      }
+
+      // 回填表單欄位
+      const nameEl = document.getElementById('borrower-name');
+      if (nameEl) nameEl.value = order.borrower_name || '';
+      const actEl = document.getElementById('activity-name');
+      if (actEl) actEl.value = order.activity_name || '';
+      const emailEl = document.getElementById('borrower-email');
+      if (emailEl) {
+        let oEmail = (order.email || '').trim();
+        if (oEmail.toLowerCase().endsWith('@waldorf.ilc.edu.tw')) {
+          emailEl.value = oEmail.substring(0, oEmail.length - '@waldorf.ilc.edu.tw'.length);
+        } else {
+          emailEl.value = oEmail;
+        }
+      }
+      const phoneEl = document.getElementById('borrower-phone');
+      if (phoneEl) phoneEl.value = order.phone || '';
+      const bDateEl = document.getElementById('borrow-date');
+      if (bDateEl && order.borrow_date) bDateEl.value = order.borrow_date;
+      const rDateEl = document.getElementById('return-date');
+      if (rDateEl && order.return_date) rDateEl.value = order.return_date;
+
+      const gbDateEl = document.getElementById('global-borrow-date');
+      if (gbDateEl && order.borrow_date) gbDateEl.value = order.borrow_date;
+      const grDateEl = document.getElementById('global-return-date');
+      if (grDateEl && order.return_date) grDateEl.value = order.return_date;
+
+      const ebDateEl = document.getElementById('edit-mode-borrow-date');
+      if (ebDateEl && order.borrow_date) ebDateEl.value = order.borrow_date;
+      const erDateEl = document.getElementById('edit-mode-return-date');
+      if (erDateEl && order.return_date) erDateEl.value = order.return_date;
+
+      updateRangeBadge();
+
+      // 顯示頂部專屬工作區
+      document.getElementById('edit-banner-order-id').innerText = order.order_id;
+      document.getElementById('edit-banner-borrower').innerText = order.borrower_name || '教師';
+      const container = document.getElementById('edit-mode-container');
+      if (container) {
+        container.style.display = 'block';
+        container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      // 更改送出按鈕文字
+      const submitBtn = document.getElementById('btn-submit-loan');
+      if (submitBtn) submitBtn.innerText = '確認修改並更新借用單';
+
+      // 載入庫存若尚未載入
+      if (!inventoryData || inventoryData.length === 0) {
+        loadInventoryData();
+      }
+
+      // 依目前修改中訂單重算排除後的可用額度
+      recomputeRangeAvailability();
+
+      // 更新畫面卡片、購物車與頂部快速調整清單
+      updateCartBar();
+      renderEquipmentCards();
+      renderEditItemsQuickPanel();
+    }
+
+    // 渲染頂部「已借裝備快速調整清單」
+    function renderEditItemsQuickPanel() {
+      const tableContainer = document.getElementById('edit-items-table-container');
+      const countEl = document.getElementById('edit-items-count');
+      if (!tableContainer) return;
+
+      const keys = Object.keys(cart).filter(id => (cart[id] || 0) > 0);
+      if (countEl) countEl.innerText = keys.length;
+
+      if (keys.length === 0) {
+        tableContainer.innerHTML = `
+          <div style="text-align: center; padding: 22px; color: var(--accent-orange); background: #FFF5F5; border-radius: 6px; border: 1px dashed #FFCDD2;">
+            <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 4px;">目前借用品項已被全部移除</div>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">若仍需借用，請在下方裝備卡片清單中挑選裝備，點擊「＋」加入借用單。</span>
+          </div>
+        `;
+        return;
+      }
+
+      let rowsHtml = '';
+      keys.forEach(id => {
+        const item = inventoryData.find(x => x.id === id) || { id: id, name: id, category: '裝備', available_qty: 0 };
+        const currentQty = cart[id] || 0;
+        const origItem = (originalOrderData && Array.isArray(originalOrderData.items))
+          ? originalOrderData.items.find(x => x.id === id)
+          : null;
+        const origQty = origItem ? origItem.qty : 0;
+        const maxAvail = item.available_qty + origQty;
+        const canAdd = currentQty < maxAvail;
+
+        let changeBadge = '';
+        if (origQty === 0) {
+          changeBadge = '<span style="background:#E8F5E9; color:#2E7D32; font-size:0.75rem; padding:2px 6px; border-radius:4px; font-weight:700; margin-left:6px;">新增品項</span>';
+        } else if (currentQty > origQty) {
+          changeBadge = `<span style="background:#E3F2FD; color:#1565C0; font-size:0.75rem; padding:2px 6px; border-radius:4px; font-weight:700; margin-left:6px;">追加 +${currentQty - origQty}</span>`;
+        } else if (currentQty < origQty) {
+          changeBadge = `<span style="background:#FFF3E0; color:#E65100; font-size:0.75rem; padding:2px 6px; border-radius:4px; font-weight:700; margin-left:6px;">減少 -${origQty - currentQty}</span>`;
+        } else {
+          changeBadge = '<span style="background:#F5F5F5; color:#616161; font-size:0.75rem; padding:2px 6px; border-radius:4px; margin-left:6px;">未變更</span>';
+        }
+
+        rowsHtml += `
+          <tr style="border-bottom: 1px solid var(--border-color);">
+            <td style="padding: 10px 12px; vertical-align: middle;">
+              <div style="font-weight: 700; color: var(--text-main); font-size: 0.95rem;">
+                ${escapeHtml(item.name)} ${changeBadge}
+              </div>
+              <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">
+                類別：${escapeHtml(item.category || '')} ｜ 原借數量：<strong>${origQty}</strong> 件
+              </div>
+            </td>
+            <td style="padding: 10px 12px; text-align: center; vertical-align: middle;">
+              <div class="qty-control" style="justify-content: center;">
+                <button type="button" class="qty-btn" onclick="updateCart('${id}', -1)">−</button>
+                <span class="qty-number" style="font-size: 1.05rem; min-width: 36px;">${currentQty}</span>
+                <button type="button" class="qty-btn" ${canAdd ? '' : 'disabled'} onclick="updateCart('${id}', 1)">+</button>
+              </div>
+            </td>
+            <td style="padding: 10px 12px; text-align: center; vertical-align: middle; font-size: 0.84rem;">
+              <span style="color: ${item.available_qty > 0 ? 'var(--accent-green)' : 'var(--text-muted)'}; font-weight: 600;">
+                剩餘 ${item.available_qty} 件
+              </span>
+              <div style="font-size: 0.74rem; color: var(--text-muted);">(最多可調至 ${maxAvail} 件)</div>
+            </td>
+            <td style="padding: 10px 12px; text-align: center; vertical-align: middle;">
+              <button type="button" class="btn-action" style="background: #FFF0F0; color: #C62828; border: 1px solid #FFCDD2; padding: 5px 10px; font-size: 0.8rem; border-radius: 4px;" onclick="updateCart('${id}', -${currentQty})">
+                移除
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+
+      tableContainer.innerHTML = `
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+          <thead>
+            <tr style="background: var(--bg-main); color: var(--text-muted); font-size: 0.82rem; border-bottom: 2px solid var(--border-color);">
+              <th style="text-align: left; padding: 8px 12px;">品項名稱與變更狀態</th>
+              <th style="text-align: center; width: 140px; padding: 8px 12px;">調整數量</th>
+              <th style="text-align: center; width: 140px; padding: 8px 12px;">在庫庫存狀態</th>
+              <th style="text-align: center; width: 80px; padding: 8px 12px;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+          </tbody>
+        </table>
+        <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div style="font-size: 0.84rem; color: var(--text-muted);">
+            提示：若欲<strong>追加借用原本未選的裝備</strong>，請往下滑動至「裝備卡片清單」點擊「＋」即可加入清單。
+          </div>
+          <button type="button" class="btn-action btn-return" style="padding: 10px 22px; font-size: 0.95rem;" onclick="openBorrowModal()">
+            確認修改清單並填寫送出 →
+          </button>
+        </div>
+      `;
+    }
+
+    function cancelEditMode() {
+      if (!confirm('確定要放棄修改此借用單嗎？未儲存的變更將會遺失。')) {
+        return;
+      }
+      exitEditModeInternal();
+      cart = {};
+
+      // 清空或復原表單
+      document.getElementById('borrower-name').value = '';
+      document.getElementById('activity-name').value = '';
+      document.getElementById('borrower-email').value = '';
+      document.getElementById('borrower-phone').value = '';
+
+      const today = new Date();
+      const returnDay = new Date();
+      returnDay.setDate(today.getDate() + 3);
+      const bStr = formatDate(today);
+      const rStr = formatDate(returnDay);
+
+      document.getElementById('borrow-date').value = bStr;
+      document.getElementById('return-date').value = rStr;
+
+      const gb = document.getElementById('global-borrow-date');
+      if (gb) gb.value = bStr;
+      const gr = document.getElementById('global-return-date');
+      if (gr) gr.value = rStr;
+
+      const eb = document.getElementById('edit-mode-borrow-date');
+      if (eb) eb.value = bStr;
+      const er = document.getElementById('edit-mode-return-date');
+      if (er) er.value = rStr;
+
+      updateRangeBadge();
+      recomputeRangeAvailability();
+      updateCartBar();
+      renderEquipmentCards();
+    }
+
+    function exitEditModeInternal() {
+      editingOrderId = null;
+      originalOrderData = null;
+      try {
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      } catch (e) {}
+      const container = document.getElementById('edit-mode-container');
+      if (container) container.style.display = 'none';
+      const submitBtn = document.getElementById('btn-submit-loan');
+      if (submitBtn) submitBtn.innerText = '確認送出並產出檢核單';
+      recomputeRangeAvailability();
+    }
+
+    // 提交借用訂單（支援新單申請與舊單修改）
+    function submitLoanOrder() {
+      const name = document.getElementById('borrower-name').value.trim();
+      const activity = document.getElementById('activity-name').value.trim();
+      const rawEmail = document.getElementById('borrower-email').value.trim();
+      const email = resolveSchoolEmail(rawEmail);
+      const phone = document.getElementById('borrower-phone').value.trim();
+      const borrowDate = document.getElementById('borrow-date').value;
+      const returnDate = document.getElementById('return-date').value;
+
+      if (!name || !activity || !rawEmail || !borrowDate || !returnDate) {
+        alert('請確實填寫所有標註 * 的必填欄位！');
+        return;
+      }
+
+      const emailLower = email.toLowerCase();
+      const isSchoolEmail = emailLower.endsWith('@waldorf.ilc.edu.tw') ||
+                            emailLower.endsWith('@tmail.ilc.edu.tw') ||
+                            emailLower === 'guan7chen@gmail.com';
+      if (!isSchoolEmail) {
+        alert('【權限限制】\n本借用系統僅限慈心華德福教職員使用！\n請填寫 @waldorf.ilc.edu.tw 學校官方信箱帳號。');
+        document.getElementById('borrower-email').focus();
+        return;
+      }
+
+      const checkboxes = document.querySelectorAll('#dynamic-agreements-container input.pact-checkbox');
+      const allChecked = checkboxes.length > 0 && Array.from(checkboxes).every(cb => cb.checked);
+      if (!allChecked) {
+        alert('【請先完成切結承諾】\n為確保戶外裝備使用安全與保養品質，請逐項確認並勾選同意上方所有借用承諾事項！');
+        return;
+      }
+
+      const items = Object.keys(cart).map(id => {
+        const it = inventoryData.find(x => x.id === id);
+        return {
+          id: id,
+          name: it.name,
+          qty: cart[id]
+        };
+      }).filter(x => x.qty > 0);
+
+      if (items.length === 0) {
+        alert('購物車中尚無任何借用品項，請至少選取一項裝備！');
+        return;
+      }
+
+      const isEditing = !!editingOrderId;
+      const payload = {
+        order_id: editingOrderId || undefined,
+        borrower_name: name,
+        activity_name: activity,
+        email: email,
+        phone: phone,
+        borrow_date: borrowDate,
+        return_date: returnDate,
+        items: items
+      };
+
+      const btn = document.getElementById('btn-submit-loan');
+      const origBtnText = isEditing ? '確認修改並更新借用單' : '確認送出並產出檢核單';
+      btn.innerText = isEditing ? '正在更新借用單...' : '處理送出中...';
+      btn.disabled = true;
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        if (isEditing) {
+          google.script.run
+            .withSuccessHandler((res) => {
+              btn.innerText = origBtnText;
+              btn.disabled = false;
+              if (res.success) {
+                const editId = editingOrderId;
+                exitEditModeInternal();
+                handleLoanSuccess(editId, payload, true);
+              } else {
+                alert('修改失敗：' + res.message);
+              }
+            })
+            .withFailureHandler((err) => {
+              btn.innerText = origBtnText;
+              btn.disabled = false;
+              alert('系統錯誤：' + err);
+            })
+            .updateLoanOrder(payload);
+        } else {
+          google.script.run
+            .withSuccessHandler((res) => {
+              btn.innerText = origBtnText;
+              btn.disabled = false;
+              if (res.success) {
+                handleLoanSuccess(res.order_id, payload, false);
+              } else {
+                alert('提交失敗：' + res.message);
+              }
+            })
+            .withFailureHandler((err) => {
+              btn.innerText = origBtnText;
+              btn.disabled = false;
+              alert('系統錯誤：' + err);
+            })
+            .submitLoan(payload);
+        }
+      } else {
+        // 本機離線模擬
+        setTimeout(() => {
+          btn.innerText = origBtnText;
+          btn.disabled = false;
+          if (isEditing) {
+            const editId = editingOrderId;
+            exitEditModeInternal();
+            handleLoanSuccess(editId, payload, true);
+          } else {
+            const fakeOrderId = 'LOAN-' + formatDate(new Date()).replace(/-/g,'') + '-001';
+            handleLoanSuccess(fakeOrderId, payload, false);
+          }
+        }, 600);
+      }
+    }
+
+    function handleLoanSuccess(orderId, payload, isEdit) {
+      try {
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      } catch (e) {}
+      closeBorrowModal();
+      currentCompletedOrder = {
+        order_id: orderId,
+        ...payload
+      };
+
+      cart = {};
+      renderEquipmentCards();
+
+      document.getElementById('success-order-id').innerText = orderId;
+      const titleEl = document.getElementById('success-modal-title');
+      const descEl = document.getElementById('success-modal-desc');
+      if (isEdit) {
+        if (titleEl) titleEl.innerText = '借用單修改成功！';
+        if (descEl) descEl.innerHTML = '變更確認信已同步發送至冠錡老師信箱與您的 Email。<br>出庫前請重新列印最新版 A4 檢核單，於實體點交時簽名確認。';
+      } else {
+        if (titleEl) titleEl.innerText = '借用申請成功！';
+        if (descEl) descEl.innerHTML = '通知信已同步發送至冠錡老師信箱與您的 Email。<br>出庫前請直接列印 A4 檢核單，於實體點交時簽名確認。';
+      }
+      document.getElementById('success-modal').classList.add('active');
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        loadInventoryData();
+        loadActiveOrdersSchedule();
+      }
+    }
+
+    function closeSuccessModal() {
+      document.getElementById('success-modal').classList.remove('active');
+    }
+
+    // 列印當前訂單
+    function printCurrentOrder() {
+      if (!currentCompletedOrder) return;
+      populatePrintView(currentCompletedOrder);
+      window.print();
+    }
+
+    // 填入 A4 列印模板資料
+    function populatePrintView(order) {
+      document.getElementById('p-order-id').innerText = order.order_id;
+      document.getElementById('p-borrower-name').innerText = order.borrower_name;
+      document.getElementById('p-activity-name').innerText = order.activity_name || '無特別標註';
+      document.getElementById('p-email').innerText = order.email || '無';
+      document.getElementById('p-borrow-date').innerText = order.borrow_date;
+      document.getElementById('p-return-date').innerText = order.return_date;
+
+      const tbody = document.getElementById('p-items-tbody');
+      tbody.innerHTML = '';
+
+      order.items.forEach(it => {
+        const ref = inventoryData.find(x => x.id === it.id) || {};
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <strong style="font-size:0.95rem;">${it.name}</strong><br>
+            <span style="font-size:0.75rem; color:#555;">${ref.category || ''}</span><br>
+            <span style="font-size:0.92rem; font-weight:bold; color:#B91C1C;">借出：${it.qty} 件</span>
+            ${ref.accessories ? `
+              <div style="margin-top:6px; font-size:0.75rem; color:#1B5E20; background:#E8F5E9; padding:4px 6px; border-radius:4px; border:1px solid #C8E6C9; line-height:1.4;">
+                <div style="font-weight:700; color:#2E7D32;">【隨附配件清點】</div>
+                ${escapeHtml(ref.accessories)}
+              </div>
+            ` : ''}
+          </td>
+          <td style="font-size:0.78rem; line-height:1.45;">
+            <div style="font-weight:700; color:#1A2E26; margin-bottom:2px;">【本體結構功能檢測】</div>
+            ${escapeHtml(ref.inspection || '目視檢查外觀無損、結構功能正常。')}
+          </td>
+          <td style="text-align:center;">[  ] 正常<br><span style="font-size:0.7rem; color:#888;">簽名:____</span></td>
+          <td style="font-size:0.78rem;">
+            <strong>安全：</strong>${escapeHtml(ref.safety || '按一般登山安全守則使用。')}<br>
+            <strong>清潔：</strong>${escapeHtml(ref.clean || '徹底擦淨乾燥後歸庫。')}
+          </td>
+          <td style="text-align:center;">[  ] 潔淨<br><span style="font-size:0.7rem; color:#888;">簽名:____</span></td>
+          <td></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    let isAdminLoggedIn = false;
+    let currentAdminPin = "";
+
+    // 後台分頁切換
+    function switchTab(tab) {
+      const btnBorrow = document.getElementById('btn-tab-borrow');
+      const btnAdmin = document.getElementById('btn-tab-admin');
+      const viewBorrow = document.getElementById('view-borrow');
+      const viewAdmin = document.getElementById('view-admin');
+
+      if (tab === 'borrow') {
+        btnBorrow.classList.add('active');
+        btnAdmin.classList.remove('active');
+        viewBorrow.style.display = 'block';
+        viewAdmin.style.display = 'none';
+        updateCartBar();
+      } else {
+        // 若尚未登入後台，要求輸入管理員密碼（輸入框留白，絕不顯示給他人）
+        if (!isAdminLoggedIn) {
+          const inputPin = prompt('【管理員驗證】請輸入後台管理密碼：', '');
+          if (inputPin === null) {
+            return; // 使用者按取消
+          }
+          if (inputPin.trim() !== '9879') {
+            alert('管理密碼錯誤，拒絕存取！');
+            return;
+          }
+          isAdminLoggedIn = true;
+          currentAdminPin = inputPin.trim();
+        }
+
+        btnAdmin.classList.add('active');
+        btnBorrow.classList.remove('active');
+        viewBorrow.style.display = 'none';
+        viewAdmin.style.display = 'block';
+        document.getElementById('cart-bar').classList.add('hidden');
+        switchAdminSubTab(currentAdminSubTab || 'orders');
+        loadAdminCoordinationRequests(true);
+      }
+    }
+
+    // 登出管理後台
+    function adminLogout() {
+      isAdminLoggedIn = false;
+      currentAdminPin = "";
+      switchTab('borrow');
+      alert('已安全登出後台管理系統。');
+    }
+
+    // 載入後台訂單
+    function loadAdminOrders() {
+      const container = document.getElementById('admin-orders-list');
+      container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted);">正在載入借用訂單...</div>`;
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(renderAdminOrders)
+          .withFailureHandler((err) => {
+            container.innerHTML = `<div style="color:red; text-align:center;">讀取失敗：${err}</div>`;
+          })
+          .getOrders('借出中', currentAdminPin);
+      } else {
+        // 本機離線展示訂單
+        container.innerHTML = `
+          <table class="order-table">
+            <thead>
+              <tr>
+                <th>單號 / 申請時間</th>
+                <th>借用人 / 活動</th>
+                <th>預計借還區間</th>
+                <th>品項明細</th>
+                <th>狀態</th>
+                <th>管理操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>LOAN-20260904-001</strong><br><span style="font-size:0.75rem; color:#888;">2026-09-04 10:30</span></td>
+                <td><strong>李老師</strong><br><span style="font-size:0.8rem; color:#666;">8A晴光班桃源谷體訓</span></td>
+                <td>2026-09-04 ～ 2026-09-07</td>
+                <td>蜘蛛爐（藍袋組）x 3<br>折疊鋁合金擋風板 x 3</td>
+                <td><span class="status-pill status-borrowed">借出中</span></td>
+                <td>
+                  <button class="btn-action btn-return" onclick="alert('離線測試模式：點選歸還成功！')">點收確認歸還</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        `;
+      }
+    }
+
+    function renderAdminOrders(orders) {
+      const container = document.getElementById('admin-orders-list');
+      if (!orders || orders.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-muted);">目前無借出中的訂單，全部裝備皆已在庫。</div>`;
+        return;
+      }
+
+      let html = `
+        <table class="order-table">
+          <thead>
+            <tr>
+              <th>單號 / 時間</th>
+              <th>借用人 / 活動</th>
+              <th>借還區間</th>
+              <th>借用品項</th>
+              <th>狀態</th>
+              <th>管理操作</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      orders.forEach(ord => {
+        const itemsStr = ord.items.map(it => `${it.name} x ${it.qty}`).join('<br>');
+        
+        let statusBadge = `<span class="status-pill status-borrowed">${ord.status}</span>`;
+        let rowStyle = '';
+        if (ord.status === '借出中' && ord.return_date) {
+          const today = new Date();
+          const todayMid = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+          const parts = String(ord.return_date).split(/[-/]/);
+          if (parts.length === 3) {
+            const retDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+            const diffDays = Math.round((retDate - todayMid) / (1000 * 60 * 60 * 24));
+            if (diffDays < 0) {
+              statusBadge = `<span class="status-pill" style="background:#FFEBEE; color:#C62828; border:1px solid #FFCDD2; font-weight:700;">🚨 逾期 ${Math.abs(diffDays)} 天</span>`;
+              rowStyle = 'style="background-color: #FFF8F7;"';
+            } else if (diffDays === 0) {
+              statusBadge = `<span class="status-pill" style="background:#FFF8E1; color:#F57F17; border:1px solid #FFE082; font-weight:700;">⚠️ 今日到期</span>`;
+              rowStyle = 'style="background-color: #FFFCF2;"';
+            } else if (diffDays <= 2) {
+              statusBadge = `<span class="status-pill" style="background:#FFF3E0; color:#E65100; border:1px solid #FFE0B2; font-weight:700;">⏳ ${diffDays} 天後到期</span>`;
+            }
+          }
+        }
+
+        html += `
+          <tr ${rowStyle}>
+            <td><strong>${ord.order_id}</strong><br><span style="font-size:0.75rem; color:#888;">${ord.timestamp}</span></td>
+            <td><strong>${ord.borrower_name}</strong><br><span style="font-size:0.8rem; color:#666;">${ord.activity_name}</span></td>
+            <td>${ord.borrow_date} ～ ${ord.return_date}</td>
+            <td style="line-height:1.4;">${itemsStr}</td>
+            <td>${statusBadge}</td>
+            <td style="white-space: nowrap;">
+              <button class="btn-action btn-print" style="margin-bottom: 4px; padding: 4px 8px; font-size: 0.8rem;" onclick="viewOrderSheet('${ord.order_id}')">A4 檢核單</button><br>
+              <button class="btn-action btn-return" style="padding: 4px 8px; font-size: 0.8rem;" onclick="handleReturnClick('${ord.order_id}')">點收歸還</button>
+            </td>
+          </tr>
+        `;
+      });
+
+      html += `</tbody></table>`;
+      container.innerHTML = html;
+    }
+
+    // 立即執行催信檢查 (手動觸發)
+    function checkRemindersNow() {
+      if (!currentAdminPin) {
+        alert('請先登入後台！');
+        return;
+      }
+      if (!confirm('是否立即掃描全校借出訂單？\n系統將立即寄送「未歸還與逾期名單彙整通報」至您的信箱 (guan7chen@gmail.com)，並對即將到期或逾期借用人發送提醒信。')) return;
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            alert(res.message);
+            loadAdminOrders();
+          })
+          .withFailureHandler((err) => {
+            alert('執行催信出錯：' + err);
+          })
+          .checkAndSendReminders(currentAdminPin, true);
+      } else {
+        alert('離線測試模式：已模擬檢查並發送提醒信！');
+      }
+    }
+
+    // 設定/啟用每日自動催信排程
+    function setupDailyTrigger() {
+      if (!currentAdminPin) {
+        alert('請先登入後台！');
+        return;
+      }
+      if (!confirm('是否在雲端確認啟用「每日早晨 08:30 全自動巡檢與催信排程」？\n啟用後，只要有人超過時間未歸還，系統每天早晨將自動寄送彙整通知至您的信箱 (guan7chen@gmail.com)，並提醒借用人。')) return;
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            alert(res.message);
+          })
+          .withFailureHandler((err) => {
+            alert('設定排程失敗：' + err);
+          })
+          .installDailyReminderTrigger(currentAdminPin);
+      } else {
+        alert('離線測試模式：已模擬啟用每日定時排程！');
+      }
+    }
+
+    // 處理歸還點擊
+    function handleReturnClick(orderId) {
+      const notes = prompt(`【歸還確認】\n請確認實體裝備已完成清潔、陰乾與零件點收。\n請輸入驗收備註（如無異常可留空）：`, '點收無誤，正常歸庫。');
+      if (notes === null) return; // 取消
+
+      // 優先使用已登入的 PIN，若無則提示輸入（留空不預填）
+      let pin = currentAdminPin;
+      if (!pin) {
+        pin = prompt('請輸入管理員密碼：', '');
+        if (!pin) return;
+      }
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            if (res.success) {
+              alert(res.message);
+              loadAdminOrders();
+              loadInventoryData();
+            } else {
+              alert('歸還失敗：' + res.message);
+            }
+          })
+          .withFailureHandler((err) => {
+            alert('系統錯誤：' + err);
+          })
+          .returnOrder(orderId, notes, pin);
+      }
+    }
+
+    // 切換後台子分頁（借用點收 vs 協調申請匣）
+    function switchAdminSubTab(tab) {
+      currentAdminSubTab = tab;
+      const btnOrders = document.getElementById('admin-subtab-orders-btn');
+      const btnCoord = document.getElementById('admin-subtab-coord-btn');
+      const containerOrders = document.getElementById('admin-orders-container');
+      const containerCoord = document.getElementById('admin-coord-container');
+      const titleEl = document.getElementById('admin-header-title');
+      const descEl = document.getElementById('admin-header-desc');
+
+      if (tab === 'orders') {
+        if (btnOrders) {
+          btnOrders.style.background = 'var(--primary-color)';
+          btnOrders.style.color = '#FFFFFF';
+          btnOrders.style.border = 'none';
+        }
+        if (btnCoord) {
+          btnCoord.style.background = 'var(--bg-main)';
+          btnCoord.style.color = 'var(--text-main)';
+          btnCoord.style.border = '1px solid var(--border-color)';
+        }
+        if (containerOrders) containerOrders.style.display = 'block';
+        if (containerCoord) containerCoord.style.display = 'none';
+
+        if (titleEl) titleEl.innerText = '裝備借出與歸還點收台';
+        if (descEl) descEl.innerText = '檢視目前借出與預約中的裝備訂單，實體清點完成後點選「確認歸還」，庫存即時自動回補。';
+        loadAdminOrders();
+      } else {
+        if (btnCoord) {
+          btnCoord.style.background = 'var(--primary-color)';
+          btnCoord.style.color = '#FFFFFF';
+          btnCoord.style.border = 'none';
+        }
+        if (btnOrders) {
+          btnOrders.style.background = 'var(--bg-main)';
+          btnOrders.style.color = 'var(--text-main)';
+          btnOrders.style.border = '1px solid var(--border-color)';
+        }
+        if (containerOrders) containerOrders.style.display = 'none';
+        if (containerCoord) containerCoord.style.display = 'block';
+
+        if (titleEl) titleEl.innerText = '裝備借用協調申請匣';
+        if (descEl) descEl.innerText = '檢視各班級因裝備額滿提出的協調申請，可依照活動順位（高山野外 > 近郊露營 > 校內炊事）進行評估並更新協調狀態。';
+        loadAdminCoordinationRequests();
+      }
+    }
+
+    function refreshCurrentAdminTab() {
+      if (currentAdminSubTab === 'orders') {
+        loadAdminOrders();
+      } else {
+        loadAdminCoordinationRequests();
+      }
+    }
+
+    // 載入後台協調申請清單
+    function loadAdminCoordinationRequests(countOnly) {
+      const container = document.getElementById('admin-coord-list');
+      if (!countOnly && container) {
+        container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted);">正在載入協調申請...</div>`;
+      }
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            if (res && res.success && Array.isArray(res.requests)) {
+              const pendingCount = res.requests.filter(r => r.status === '待協調' || r.status === '協調中').length;
+              const countEl = document.getElementById('admin-coord-count');
+              if (countEl) countEl.innerText = pendingCount;
+              if (!countOnly) {
+                renderAdminCoordinationRequests(res.requests);
+              }
+            } else if (!countOnly && container) {
+              container.innerHTML = `<div style="color:red; text-align:center;">讀取失敗：${(res && res.message) || '未知錯誤'}</div>`;
+            }
+          })
+          .withFailureHandler((err) => {
+            if (!countOnly && container) {
+              container.innerHTML = `<div style="color:red; text-align:center;">系統錯誤：${err}</div>`;
+            }
+          })
+          .getCoordinationRequests(currentAdminPin);
+      } else {
+        // 本機離線展示資料
+        const fakeCoord = [
+          {
+            request_id: 'REQ-20261001-001',
+            created_at: '2026-09-08 14:20:00',
+            borrower_name: '張老師',
+            class_name: '9A山林班',
+            email: 'chang@waldorf.ilc.edu.tw',
+            phone: '0922-111222',
+            borrow_date: '2026-10-01',
+            return_date: '2026-10-05',
+            activity_type: '高山 / 偏遠野外挑戰（第一順位：長天數重裝、高山過夜、具安全急迫性）',
+            activity_name: '加羅湖高山探索挑戰',
+            items: [
+              { id: 'EQ-001', name: '蜘蛛爐（藍袋組）', qty: 6 },
+              { id: 'EQ-006', name: '折疊鋁合金擋風板', qty: 6 }
+            ],
+            conflict_summary: 'LOAN-20261001-001（李老師 / 8A晴光班桃源谷體訓，2026-10-01～2026-10-05）：蜘蛛爐（藍袋組） x 9、折疊鋁合金擋風板 x 5',
+            reason: '本班進行 5 天高山野外探索，因山上低溫急需抗風高山爐具，原預約已被佔滿，希望能協調 6 頂，亦可接受部分黑袋或折衷數量。',
+            status: '待協調',
+            notes: ''
+          }
+        ];
+        const countEl = document.getElementById('admin-coord-count');
+        if (countEl) countEl.innerText = fakeCoord.length;
+        if (!countOnly && container) {
+          renderAdminCoordinationRequests(fakeCoord);
+        }
+      }
+    }
+
+    // 渲染協調申請卡片清單
+    function renderAdminCoordinationRequests(requests) {
+      const container = document.getElementById('admin-coord-list');
+      if (!container) return;
+
+      if (!requests || requests.length === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 40px 20px; color: var(--accent-green); background: #F8FBF8; border-radius: 8px; border: 1px solid #C8E6C9;">
+            <div style="font-size: 1.1rem; font-weight: 700; margin-bottom: 6px;">🌿 目前無任何待處理的裝備協調申請</div>
+            <div style="font-size: 0.88rem; color: var(--text-muted);">所有跨班級裝備需求目前均運作順暢！</div>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '<div style="display: flex; flex-direction: column; gap: 14px;">';
+
+      requests.forEach(req => {
+        let badgeClass = 'priority-badge-low';
+        if (req.activity_type.includes('第一順位') || req.activity_type.includes('高山') || req.activity_type.includes('野外')) {
+          badgeClass = 'priority-badge-high';
+        } else if (req.activity_type.includes('第二順位') || req.activity_type.includes('近郊') || req.activity_type.includes('露營')) {
+          badgeClass = 'priority-badge-medium';
+        }
+
+        let itemsSummary = '';
+        if (Array.isArray(req.items)) {
+          itemsSummary = req.items.map(it => `<strong>${escapeHtml(it.name)}</strong> x <span style="color:#C0392B; font-weight:700;">${it.qty}</span> 件`).join('、');
+        }
+
+        let statusColor = '#B45309';
+        let statusBg = '#FEF9F3';
+        if (req.status === '已協調完成') {
+          statusColor = '#155724';
+          statusBg = '#D4EDDA';
+        } else if (req.status === '無法協調') {
+          statusColor = '#721C24';
+          statusBg = '#F8D7DA';
+        } else if (req.status === '協調中') {
+          statusColor = '#004085';
+          statusBg = '#CCE5FF';
+        }
+
+        html += `
+          <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; border-bottom: 1px solid #EEE; padding-bottom: 10px;">
+              <div>
+                <span class="${badgeClass}" style="margin-right: 8px;">${escapeHtml(req.activity_type || '一般活動')}</span>
+                <strong style="color: var(--primary-color); font-size: 1.05rem;">${escapeHtml(req.class_name || '')} ｜ ${escapeHtml(req.borrower_name || '')} 老師</strong>
+                <span style="font-size: 0.82rem; color: var(--text-muted); margin-left: 8px;">單號：${escapeHtml(req.request_id)} ｜ 申請時間：${escapeHtml(req.created_at)}</span>
+              </div>
+              <div>
+                <span style="display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 0.82rem; font-weight: 700; background: ${statusBg}; color: ${statusColor};">
+                  ${escapeHtml(req.status || '待協調')}
+                </span>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; font-size: 0.88rem; margin-bottom: 12px;">
+              <div><strong>🗓️ 預計借還時段：</strong><span style="color: var(--primary-color); font-weight: 600;">${escapeHtml(req.borrow_date)} ～ ${escapeHtml(req.return_date)}</span></div>
+              <div><strong>📍 行程地點：</strong>${escapeHtml(req.activity_name)}</div>
+              <div><strong>📞 聯絡電話：</strong>${escapeHtml(req.phone)}</div>
+              <div><strong>✉️ 學校信箱：</strong><a href="mailto:${escapeHtml(req.email)}" style="color: var(--primary-color);">${escapeHtml(req.email)}</a></div>
+            </div>
+
+            <div style="background: #FAF9F6; border: 1px solid #EAE6DF; border-radius: 6px; padding: 10px 14px; font-size: 0.88rem; margin-bottom: 10px;">
+              <div style="font-weight: 700; color: var(--primary-color); margin-bottom: 4px;">🎒 欲協調裝備品項：</div>
+              <div>${itemsSummary || '無'}</div>
+            </div>
+
+            ${req.conflict_summary ? `
+              <div style="background: #FFFDF9; border-left: 3px solid var(--accent-orange); border: 1px solid #EAD8C3; border-left-width: 3px; border-radius: 6px; padding: 8px 12px; font-size: 0.82rem; color: #7A4B20; margin-bottom: 10px;">
+                <strong>⚠️ 同時段衝突訂單：</strong><br>
+                <div style="white-space: pre-line; margin-top: 3px;">${escapeHtml(req.conflict_summary)}</div>
+              </div>
+            ` : ''}
+
+            <div style="background: #FDFEFE; border: 1px solid #D4E6F1; border-radius: 6px; padding: 10px 14px; font-size: 0.86rem; color: #1A5276; margin-bottom: 12px;">
+              <strong>💬 老師協調原因與替代方案說明：</strong><br>
+              <div style="margin-top: 4px; line-height: 1.5; color: #2C3E50;">${escapeHtml(req.reason)}</div>
+            </div>
+
+            <!-- 後台管理操作區 -->
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; background: #F8F9F9; padding: 10px 14px; border-radius: 6px;">
+              <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex: 1;">
+                <label style="font-size: 0.84rem; font-weight: 700; color: var(--text-main);">更新協調進度：</label>
+                <select id="coord-status-${req.request_id}" style="padding: 4px 8px; font-size: 0.84rem; border-radius: 4px; border: 1px solid var(--border-color); background: #FFF;">
+                  <option value="待協調" ${req.status === '待協調' ? 'selected' : ''}>待協調</option>
+                  <option value="協調中" ${req.status === '協調中' ? 'selected' : ''}>協調中（已聯繫各班）</option>
+                  <option value="已協調完成" ${req.status === '已協調完成' ? 'selected' : ''}>已協調完成（已達共識/釋出額度）</option>
+                  <option value="無法協調" ${req.status === '無法協調' ? 'selected' : ''}>無法協調（額度全滿/順位限制）</option>
+                </select>
+                <input type="text" id="coord-notes-${req.request_id}" placeholder="冠錡老師協調備註（例如：已請 8A 挪出 2 頂，請 9A 重新上網借用）" value="${escapeHtml(req.notes || '')}" style="flex: 1; min-width: 200px; padding: 4px 8px; font-size: 0.84rem; border: 1px solid var(--border-color); border-radius: 4px;">
+              </div>
+              <button type="button" class="btn-action" style="padding: 6px 14px; font-size: 0.84rem; background: var(--primary-color); color: #FFF;" onclick="saveCoordinationStatus('${req.request_id}')">儲存更新</button>
+            </div>
+          </div>
+        `;
+      });
+
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    // 儲存協調狀態與備註
+    function saveCoordinationStatus(requestId) {
+      const statusSelect = document.getElementById(`coord-status-${requestId}`);
+      const notesInput = document.getElementById(`coord-notes-${requestId}`);
+      if (!statusSelect) return;
+
+      const newStatus = statusSelect.value;
+      const notes = notesInput ? notesInput.value.trim() : '';
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            if (res && res.success) {
+              alert(res.message);
+              loadAdminCoordinationRequests();
+            } else {
+              alert('更新失敗：' + ((res && res.message) || '未知錯誤'));
+            }
+          })
+          .withFailureHandler((err) => {
+            alert('系統錯誤：' + err);
+          })
+          .updateCoordinationStatus({
+            request_id: requestId,
+            status: newStatus,
+            notes: notes
+          }, currentAdminPin);
+      } else {
+        alert(`離線測試模式：單號 ${requestId} 狀態已更新為【${newStatus}】！`);
+      }
+    }
+
+    // 下載 A4 檢核單 (PDF)
+    function downloadCurrentOrderPdf() {
+      if (!currentCompletedOrder) {
+        alert('無可用的訂單資料！');
+        return;
+      }
+      populatePrintView(currentCompletedOrder);
+
+      const exportElement = document.getElementById('print-content-to-export');
+      const printLayout = document.getElementById('print-layout');
+      const oldDisplay = printLayout.style.display;
+      printLayout.style.display = 'block';
+
+      const orderId = currentCompletedOrder.order_id || 'ORDER';
+      const filename = '戶外裝備出庫驗收檢核單_' + orderId + '.pdf';
+
+      const btns = document.querySelectorAll('#btn-download-pdf-modal, #btn-download-pdf-top');
+      btns.forEach(b => {
+        b.dataset.oldText = b.innerText;
+        b.innerText = '產出 PDF 下載中...';
+        b.disabled = true;
+      });
+
+      if (typeof html2pdf !== 'undefined') {
+        const opt = {
+          margin:       [8, 8, 8, 8],
+          filename:     filename,
+          image:        { type: 'jpeg', quality: 0.98 },
+          html2canvas:  { scale: 2, useCORS: true, logging: false },
+          jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(exportElement).save().then(() => {
+          printLayout.style.display = oldDisplay;
+          btns.forEach(b => {
+            b.innerText = b.dataset.oldText || '下載 A4 檢核單 (PDF)';
+            b.disabled = false;
+          });
+        }).catch(err => {
+          console.warn('html2pdf 導出錯誤，改用 HTML 下載：', err);
+          printLayout.style.display = oldDisplay;
+          btns.forEach(b => {
+            b.innerText = b.dataset.oldText || '下載 A4 檢核單 (PDF)';
+            b.disabled = false;
+          });
+          downloadCurrentOrderHtml();
+        });
+      } else {
+        printLayout.style.display = oldDisplay;
+        btns.forEach(b => {
+          b.innerText = b.dataset.oldText || '下載 A4 檢核單 (PDF)';
+          b.disabled = false;
+        });
+        downloadCurrentOrderHtml();
+      }
+    }
+
+    // 下載 A4 檢核單 (獨立 HTML 離線檔)
+    function downloadCurrentOrderHtml() {
+      if (!currentCompletedOrder) return;
+      populatePrintView(currentCompletedOrder);
+
+      const content = document.getElementById('print-content-to-export').innerHTML;
+      const orderId = currentCompletedOrder.order_id || 'ORDER';
+      const fullHtml = '<!DOCTYPE html>\n' +
+'<html lang="zh-TW">\n' +
+'<head>\n' +
+'  <meta charset="UTF-8">\n' +
+'  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
+'  <title>戶外裝備出庫驗收檢核單 - ' + orderId + '</title>\n' +
+'  <style>\n' +
+'    * { box-sizing: border-box; }\n' +
+'    body { font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Microsoft JhengHei", sans-serif; background: #fff; color: #111; margin: 0; padding: 20px; }\n' +
+'    .container { max-width: 820px; margin: 0 auto; }\n' +
+'    .no-print { margin-bottom: 20px; padding: 12px; background: #EBF2ED; border: 1px solid #2B4C3F; border-radius: 6px; text-align: center; }\n' +
+'    .btn { background: #2B4C3F; color: #fff; border: none; padding: 8px 18px; border-radius: 4px; font-size: 14px; cursor: pointer; }\n' +
+'    .print-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 14px; }\n' +
+'    .print-header h1 { font-size: 1.35rem; margin: 0 0 4px; font-weight: bold; }\n' +
+'    .print-header p { font-size: 0.88rem; margin: 0; color: #333; }\n' +
+'    .print-meta-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 0.88rem; margin-bottom: 14px; padding: 8px; border: 1px solid #ccc; }\n' +
+'    .print-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin-bottom: 16px; }\n' +
+'    .print-table th, .print-table td { border: 1px solid #333; padding: 6px 8px; vertical-align: top; line-height: 1.4; }\n' +
+'    .print-table th { background: #f0f0f0; text-align: center; font-weight: bold; }\n' +
+'    .print-sign-box { border: 1px solid #333; padding: 12px; margin-top: 14px; font-size: 0.85rem; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }\n' +
+'    .sign-row { display: flex; justify-content: space-between; margin-top: 18px; }\n' +
+'    @media print { .no-print { display: none !important; } @page { size: A4 portrait; margin: 10mm; } body { padding: 0; } }\n' +
+'  </style>\n' +
+'</head>\n' +
+'<body>\n' +
+'  <div class="container">\n' +
+'    <div class="no-print">\n' +
+'      <button class="btn" onclick="window.print()">列印此單（可在目的地選擇「另存為 PDF」）</button>\n' +
+'    </div>\n' +
+'    ' + content + '\n' +
+'  </div>\n' +
+'</body>\n' +
+'</html>';
+
+      const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+      downloadBlob(blob, '戶外裝備出庫驗收檢核單_' + orderId + '.html');
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.target = '_blank';
+      document.body.appendChild(a);
+      try {
+        a.click();
+      } catch (e) {
+        window.open(url, '_blank');
+      }
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 1000);
+    }
+
+    // 線上檢視檢核單
+    function viewCurrentOrderSheet() {
+      if (!currentCompletedOrder) return;
+      populatePrintView(currentCompletedOrder);
+      closeSuccessModal();
+      document.getElementById('app-view').style.display = 'none';
+      document.getElementById('print-layout').style.display = 'block';
+      window.scrollTo(0, 0);
+    }
+
+    // 從後台檢視指定訂單之檢核單
+    function viewOrderSheet(orderId) {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler((order) => {
+            currentCompletedOrder = order;
+            populatePrintView(order);
+            document.getElementById('app-view').style.display = 'none';
+            document.getElementById('print-layout').style.display = 'block';
+            window.scrollTo(0, 0);
+          })
+          .withFailureHandler((err) => {
+            alert('無法載入檢核單：' + err);
+          })
+          .getOrderDetails(orderId);
+      } else {
+        const fakeOrder = {
+          order_id: orderId,
+          borrower_name: '李老師',
+          activity_name: '8A晴光班桃源谷體訓',
+          email: 'teacher@waldorf.ilc.edu.tw',
+          phone: '0912-345678',
+          borrow_date: '2026-09-04',
+          return_date: '2026-09-07',
+          items: [
+            { id: 'EQ-001', name: '蜘蛛爐（藍袋組）', qty: 3, category: '爐具與燃氣安全系統', inspection: '1. 檢查金屬導管。\n2. 接頭 O-Ring 完好。', safety: '火等瓦斯，絕不讓瓦斯等火。', clean: '冷卻後拆罐，擦淨油垢。' },
+            { id: 'EQ-006', name: '折疊鋁合金擋風板', qty: 3, category: '爐具與燃氣安全系統', inspection: '鉸鏈插銷完整。', safety: '離瓦斯罐15cm以上。', clean: '擦除油煙，折疊入盒。' }
+          ]
+        };
+        currentCompletedOrder = fakeOrder;
+        populatePrintView(fakeOrder);
+        document.getElementById('app-view').style.display = 'none';
+        document.getElementById('print-layout').style.display = 'block';
+        window.scrollTo(0, 0);
+      }
+    }
+
+    // 關閉檢核單檢視，回到主系統
+    function closePrintView() {
+      document.getElementById('print-layout').style.display = 'none';
+      document.getElementById('app-view').style.display = 'block';
+      window.scrollTo(0, 0);
+    }
+
+    // 從獨立 Email 連結開啟檢視與下載
+    function loadAndDisplayOrder(orderId) {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler((order) => {
+            currentCompletedOrder = order;
+            populatePrintView(order);
+            document.getElementById('app-view').style.display = 'none';
+            document.getElementById('print-layout').style.display = 'block';
+            window.scrollTo(0, 0);
+          })
+          .withFailureHandler((err) => {
+            alert('無法載入檢核單：' + err);
+          })
+          .getOrderDetails(orderId);
+      } else {
+        viewOrderSheet(orderId);
+      }
+    }
+
+    function loadAndPrintOrder(orderId) {
+      loadAndDisplayOrder(orderId);
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+    // Google Apps Script iframe 專用生命週期防護：所有函式與變數就緒後立即啟動
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
+  </script>
+</body>
+</html>
