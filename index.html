@@ -1362,10 +1362,19 @@
   <div class="modal-overlay" id="borrow-modal">
     <div class="modal-card">
       <div class="modal-header">
-        <div class="modal-title">填寫裝備借用申請表</div>
+        <div>
+          <div class="modal-title">填寫裝備借用申請表</div>
+          <div style="font-size: 0.82rem; color: var(--accent-amber); font-weight: 600; margin-top: 2px;">
+            借用單號：【填妥確認送出時，由系統自動編發專屬單號】
+          </div>
+        </div>
         <button class="modal-close-btn" onclick="closeBorrowModal()">&times;</button>
       </div>
       <div class="modal-body">
+        <div style="background: #F1F8F5; border-left: 4px solid var(--primary-color); padding: 8px 12px; border-radius: 4px; margin-bottom: 12px; font-size: 0.84rem; color: var(--primary-color); display: flex; justify-content: space-between; align-items: center;">
+          <span>單號規則：<strong>送出後自動核發</strong>（例：LOAN-當日日期-流水號）</span>
+          <span style="font-size: 0.76rem; background: #2B4C3F; color: #fff; padding: 2px 8px; border-radius: 10px;">免手動填寫單號</span>
+        </div>
         <h4 style="margin-bottom: 8px; color: var(--primary-color);">本次借用品項</h4>
         <table class="selected-items-table">
           <thead>
@@ -2039,8 +2048,14 @@
           })
           .getActiveOrdersForSchedule();
       } else {
-        // 離線展示用測試訂單
-        activeOrdersData = [
+        // 離線展示用測試訂單與本地儲存訂單
+        let localOrders = [];
+        try {
+          const raw = localStorage.getItem('cixin_outdoor_orders');
+          if (raw) localOrders = JSON.parse(raw);
+        } catch (e) {}
+
+        const defaultOrders = [
           {
             order_id: 'LOAN-20261001-001',
             borrower_name: '李老師',
@@ -2049,11 +2064,18 @@
             return_date: '2026-10-05',
             status: '已預約',
             items: [
-              { id: 'EQ-001', name: '蜘蛛爐（藍袋組）', qty: 9 },
-              { id: 'EQ-006', name: '折疊鋁合金擋風板', qty: 5 }
+              { id: 'EQ-001', name: '蜘蛛爐（藍袋組）', qty: 2 },
+              { id: 'EQ-006', name: '折疊鋁合金擋風板', qty: 2 }
             ]
           }
         ];
+
+        const orderMap = {};
+        defaultOrders.forEach(o => { orderMap[o.order_id] = o; });
+        if (Array.isArray(localOrders)) {
+          localOrders.forEach(o => { orderMap[o.order_id] = o; });
+        }
+        activeOrdersData = Object.values(orderMap);
         recomputeRangeAvailability();
       }
     }
@@ -3365,7 +3387,13 @@
             exitEditModeInternal();
             handleLoanSuccess(editId, payload, true);
           } else {
-            const fakeOrderId = 'LOAN-' + formatDate(new Date()).replace(/-/g,'') + '-001';
+            let seqNum = 1;
+            const todayPrefix = 'LOAN-' + formatDate(new Date()).replace(/-/g,'');
+            if (Array.isArray(activeOrdersData)) {
+              const todayOrders = activeOrdersData.filter(o => o.order_id && o.order_id.startsWith(todayPrefix));
+              seqNum = todayOrders.length + 1;
+            }
+            const fakeOrderId = todayPrefix + '-' + String(seqNum).padStart(3, '0');
             handleLoanSuccess(fakeOrderId, payload, false);
           }
         }, 600);
@@ -3380,9 +3408,34 @@
       } catch (e) {}
       closeBorrowModal();
       currentCompletedOrder = {
-        order_id: orderId,
-        ...payload
+        ...payload,
+        order_id: orderId
       };
+
+      // 本地訂單持久化與狀態同步
+      if (!Array.isArray(activeOrdersData)) activeOrdersData = [];
+      const existingIdx = activeOrdersData.findIndex(o => o.order_id === orderId);
+      const newOrderRecord = {
+        order_id: orderId,
+        borrower_name: payload.borrower_name,
+        activity_name: payload.activity_name,
+        email: payload.email,
+        phone: payload.phone,
+        borrow_date: payload.borrow_date,
+        return_date: payload.return_date,
+        items: payload.items,
+        status: isEdit ? '已修改' : '已預約',
+        created_at: new Date().toISOString()
+      };
+      if (existingIdx >= 0) {
+        activeOrdersData[existingIdx] = newOrderRecord;
+      } else {
+        activeOrdersData.unshift(newOrderRecord);
+      }
+      try {
+        localStorage.setItem('cixin_outdoor_orders', JSON.stringify(activeOrdersData));
+      } catch (e) {}
+      recomputeRangeAvailability();
 
       cart = {};
       renderEquipmentCards();
@@ -4085,21 +4138,25 @@
           })
           .getOrderDetails(orderId);
       } else {
-        const fakeOrder = {
+        let found = null;
+        if (Array.isArray(activeOrdersData)) {
+          found = activeOrdersData.find(o => o.order_id === orderId);
+        }
+        const orderToView = found || {
           order_id: orderId,
           borrower_name: '李老師',
           activity_name: '8A晴光班桃源谷體訓',
           email: 'teacher@waldorf.ilc.edu.tw',
           phone: '0912-345678',
-          borrow_date: '2026-09-04',
-          return_date: '2026-09-07',
+          borrow_date: '2026-10-01',
+          return_date: '2026-10-05',
           items: [
-            { id: 'EQ-001', name: '蜘蛛爐（藍袋組）', qty: 3, category: '爐具與燃氣安全系統', inspection: '1. 檢查金屬導管。\n2. 接頭 O-Ring 完好。', safety: '火等瓦斯，絕不讓瓦斯等火。', clean: '冷卻後拆罐，擦淨油垢。' },
-            { id: 'EQ-006', name: '折疊鋁合金擋風板', qty: 3, category: '爐具與燃氣安全系統', inspection: '鉸鏈插銷完整。', safety: '離瓦斯罐15cm以上。', clean: '擦除油煙，折疊入盒。' }
+            { id: 'EQ-001', name: '蜘蛛爐（藍袋組）', qty: 2, category: '炊事裝備', inspection: '1. 檢查金屬導管。\n2. 接頭 O-Ring 完好。', safety: '火等瓦斯，絕不讓瓦斯等火。', clean: '冷卻後拆罐，擦淨油垢。' },
+            { id: 'EQ-006', name: '折疊鋁合金擋風板', qty: 2, category: '炊事裝備', inspection: '鉸鏈插銷完整。', safety: '離瓦斯罐15cm以上。', clean: '擦除油煙，折疊入盒。' }
           ]
         };
-        currentCompletedOrder = fakeOrder;
-        populatePrintView(fakeOrder);
+        currentCompletedOrder = orderToView;
+        populatePrintView(orderToView);
         document.getElementById('app-view').style.display = 'none';
         document.getElementById('print-layout').style.display = 'block';
         window.scrollTo(0, 0);
