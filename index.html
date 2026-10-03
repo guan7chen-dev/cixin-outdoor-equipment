@@ -3657,7 +3657,7 @@
 
         html += `
           <tr ${rowStyle}>
-            <td><strong>${ord.order_id}</strong><br><span style="font-size:0.75rem; color:#888;">${ord.timestamp}</span></td>
+            <td><strong>${ord.order_id}</strong>${(ord.timestamp || ord.created_at) ? `<br><span style="font-size:0.75rem; color:#888;">${ord.timestamp || ord.created_at.slice(0, 16).replace('T', ' ')}</span>` : ''}</td>
             <td><strong>${ord.borrower_name}</strong><br><span style="font-size:0.8rem; color:#666;">${ord.activity_name}</span></td>
             <td>${ord.borrow_date} ～ ${ord.return_date}</td>
             <td style="line-height:1.4;">${itemsStr}</td>
