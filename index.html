@@ -2517,15 +2517,30 @@
           })
           .submitCoordinationRequest(payload);
       } else {
-        setTimeout(() => {
-          if (btnSubmit) {
-            btnSubmit.disabled = false;
-            btnSubmit.innerText = '確認送出協調申請';
-          }
-          alert(`【離線測試模式：協調申請已模擬送出】\n\n申請單號：REQ-20261001-001\n申請班級：${className}\n行程地點：${actName}\n已模擬發送通知信給冠錡老師！`);
-          closeCoordinationModal();
-          coordItems = [];
-        }, 600);
+        // 外部站點模式：透過雲端 API 送交試算表並發送真實通知信
+        fetch(CLOUD_API_URL + '?action=api_submit_coord&payload=' + encodeURIComponent(JSON.stringify(payload)))
+          .then(r => r.json())
+          .then(res => {
+            if (btnSubmit) {
+              btnSubmit.disabled = false;
+              btnSubmit.innerText = '確認送出協調申請';
+            }
+            if (res && res.success) {
+              alert(`【協調申請已成功送達】\n\n申請單號：${res.request_id}\n\n系統已發送協調分析通知信給陳冠錡老師，並同步副知您的學校信箱。\n冠錡老師將依活動性質與安全順位進行協調評估後與您聯繫。`);
+              closeCoordinationModal();
+              document.getElementById('coord-reason').value = '';
+              coordItems = [];
+            } else {
+              alert('協調申請送出失敗：' + ((res && res.message) || '未知錯誤'));
+            }
+          })
+          .catch(err => {
+            if (btnSubmit) {
+              btnSubmit.disabled = false;
+              btnSubmit.innerText = '確認送出協調申請';
+            }
+            alert('系統通訊錯誤：' + err);
+          });
       }
     }
 
@@ -3893,20 +3908,22 @@
         container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted);">正在載入協調申請...</div>`;
       }
 
+      const handleCoordData = (res) => {
+        if (res && res.success && Array.isArray(res.requests)) {
+          const pendingCount = res.requests.filter(r => r.status === '待協調' || r.status === '協調中').length;
+          const countEl = document.getElementById('admin-coord-count');
+          if (countEl) countEl.innerText = pendingCount;
+          if (!countOnly) {
+            renderAdminCoordinationRequests(res.requests);
+          }
+        } else if (!countOnly && container) {
+          container.innerHTML = `<div style="color:red; text-align:center;">讀取失敗：${(res && res.message) || '未知錯誤'}</div>`;
+        }
+      };
+
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
-          .withSuccessHandler((res) => {
-            if (res && res.success && Array.isArray(res.requests)) {
-              const pendingCount = res.requests.filter(r => r.status === '待協調' || r.status === '協調中').length;
-              const countEl = document.getElementById('admin-coord-count');
-              if (countEl) countEl.innerText = pendingCount;
-              if (!countOnly) {
-                renderAdminCoordinationRequests(res.requests);
-              }
-            } else if (!countOnly && container) {
-              container.innerHTML = `<div style="color:red; text-align:center;">讀取失敗：${(res && res.message) || '未知錯誤'}</div>`;
-            }
-          })
+          .withSuccessHandler(handleCoordData)
           .withFailureHandler((err) => {
             if (!countOnly && container) {
               container.innerHTML = `<div style="color:red; text-align:center;">系統錯誤：${err}</div>`;
@@ -3914,34 +3931,16 @@
           })
           .getCoordinationRequests(currentAdminPin);
       } else {
-        // 本機離線展示資料
-        const fakeCoord = [
-          {
-            request_id: 'REQ-20261001-001',
-            created_at: '2026-09-08 14:20:00',
-            borrower_name: '張老師',
-            class_name: '9A山林班',
-            email: 'chang@waldorf.ilc.edu.tw',
-            phone: '0922-111222',
-            borrow_date: '2026-10-01',
-            return_date: '2026-10-05',
-            activity_type: '高山 / 偏遠野外挑戰（第一順位：長天數重裝、高山過夜、具安全急迫性）',
-            activity_name: '加羅湖高山探索挑戰',
-            items: [
-              { id: 'EQ-001', name: '蜘蛛爐（藍袋組）', qty: 6 },
-              { id: 'EQ-006', name: '折疊鋁合金擋風板', qty: 6 }
-            ],
-            conflict_summary: 'LOAN-20261001-001（李老師 / 8A晴光班桃源谷體訓，2026-10-01～2026-10-05）：蜘蛛爐（藍袋組） x 9、折疊鋁合金擋風板 x 5',
-            reason: '本班進行 5 天高山野外探索，因山上低溫急需抗風高山爐具，原預約已被佔滿，希望能協調 6 頂，亦可接受部分黑袋或折衷數量。',
-            status: '待協調',
-            notes: ''
-          }
-        ];
-        const countEl = document.getElementById('admin-coord-count');
-        if (countEl) countEl.innerText = fakeCoord.length;
-        if (!countOnly && container) {
-          renderAdminCoordinationRequests(fakeCoord);
-        }
+        // 外部站點模式：自 Google 試算表即時載入真實協調單
+        fetch(CLOUD_API_URL + '?action=api_get_coord&pin=' + encodeURIComponent(currentAdminPin || '9879'))
+          .then(r => r.json())
+          .then(handleCoordData)
+          .catch(err => {
+            console.error('讀取雲端協調申請失敗：', err);
+            if (!countOnly && container) {
+              container.innerHTML = `<div style="color:red; text-align:center;">連線錯誤：${err}</div>`;
+            }
+          });
       }
     }
 
@@ -4083,8 +4082,20 @@
           })
           .deleteCoordinationRequest(requestId, currentAdminPin);
       } else {
-        alert(`離線測試模式：協調單 ${requestId} 已結案刪除！`);
-        loadAdminCoordinationRequests();
+        // 外部站點模式：向雲端伺服器發送結案刪除請求
+        fetch(CLOUD_API_URL + '?action=api_delete_coord&requestId=' + encodeURIComponent(requestId) + '&pin=' + encodeURIComponent(currentAdminPin || '9879'))
+          .then(r => r.json())
+          .then(res => {
+            if (res && res.success) {
+              alert(res.message);
+              loadAdminCoordinationRequests();
+            } else {
+              alert('刪除失敗：' + ((res && res.message) || '未知錯誤'));
+            }
+          })
+          .catch(err => {
+            alert('系統通訊錯誤：' + err);
+          });
       }
     }
 
@@ -4115,7 +4126,20 @@
             notes: notes
           }, currentAdminPin);
       } else {
-        alert(`離線測試模式：單號 ${requestId} 狀態已更新為【${newStatus}】！`);
+        // 外部站點模式：向雲端伺服器更新協調狀態與備註
+        fetch(CLOUD_API_URL + '?action=api_update_coord_status&requestId=' + encodeURIComponent(requestId) + '&status=' + encodeURIComponent(newStatus) + '&notes=' + encodeURIComponent(notes) + '&pin=' + encodeURIComponent(currentAdminPin || '9879'))
+          .then(r => r.json())
+          .then(res => {
+            if (res && res.success) {
+              alert(res.message);
+              loadAdminCoordinationRequests();
+            } else {
+              alert('更新失敗：' + ((res && res.message) || '未知錯誤'));
+            }
+          })
+          .catch(err => {
+            alert('系統通訊錯誤：' + err);
+          });
       }
     }
 
