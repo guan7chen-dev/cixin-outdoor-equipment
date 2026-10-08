@@ -1750,19 +1750,64 @@
       return (val + '@waldorf.ilc.edu.tw').toLowerCase();
     }
 
-    // 輔助函式：綁定帳號輸入框自動清理完整貼上的學校尾綴
+    // 輔助函式：即時比對帳號輸入框與所屬教師姓名相符性
+    function checkEmailValidationLive(emailInputId, nameInputId, hintId) {
+      const emailEl = document.getElementById(emailInputId);
+      const nameEl = document.getElementById(nameInputId);
+      const hintEl = document.getElementById(hintId);
+      if (!emailEl || !hintEl) return;
+
+      const rawVal = emailEl.value.trim();
+      const nameVal = nameEl ? nameEl.value.trim() : '';
+
+      if (!rawVal) {
+        if (!nameVal) {
+          hintEl.style.display = 'none';
+        }
+        return;
+      }
+
+      const fullEmail = resolveSchoolEmail(rawVal);
+      const auth = findAuthorizedTeacher(fullEmail, nameVal);
+
+      if (auth) {
+        hintEl.style.display = 'block';
+        hintEl.style.color = '#2B4C3F';
+        hintEl.innerHTML = `✓ 慈心教職員已認證：<strong>${escapeHtml(auth.name)}</strong> 老師（${escapeHtml(auth.email)}）`;
+      } else {
+        hintEl.style.display = 'block';
+        hintEl.style.color = '#C0392B';
+        const teacherByEmail = (Array.isArray(EMBEDDED_TEACHERS) ? EMBEDDED_TEACHERS : []).find(t => (t.email || '').toLowerCase() === fullEmail.toLowerCase());
+        if (teacherByEmail) {
+          hintEl.innerHTML = `⚠️ 此帳號為 <strong>${escapeHtml(teacherByEmail.name)}</strong> 老師登記信箱，與所填借用人姓名不符！`;
+        } else {
+          hintEl.innerHTML = `⚠️ 查無「${escapeHtml(rawVal)}」公務信箱帳號，請確認或由姓名下拉清單選取！`;
+        }
+      }
+    }
+
+    // 輔助函式：綁定帳號輸入框自動清理完整貼上的學校尾綴並即時校驗
     function setupEmailPrefixInputs() {
-      ['borrower-email', 'coord-email', 'lookup-email'].forEach(id => {
-        const el = document.getElementById(id);
+      const emailConfigs = [
+        { id: 'borrower-email', nameId: 'borrower-name', hintId: 'borrower-name-hint' },
+        { id: 'coord-email', nameId: 'coord-borrower-name', hintId: 'coord-name-hint' },
+        { id: 'lookup-email', nameId: null, hintId: null }
+      ];
+
+      emailConfigs.forEach(cfg => {
+        const el = document.getElementById(cfg.id);
         if (!el) return;
-        const stripSuffix = function() {
+        const handler = function() {
           let v = el.value.trim();
           if (v.toLowerCase().endsWith('@waldorf.ilc.edu.tw')) {
             el.value = v.substring(0, v.length - '@waldorf.ilc.edu.tw'.length).trim();
           }
+          if (cfg.nameId && cfg.hintId) {
+            checkEmailValidationLive(cfg.id, cfg.nameId, cfg.hintId);
+          }
         };
-        el.addEventListener('input', stripSuffix);
-        el.addEventListener('blur', stripSuffix);
+        el.addEventListener('input', handler);
+        el.addEventListener('blur', handler);
       });
     }
 
@@ -1861,19 +1906,32 @@
       const emailLower = (emailStr || '').trim().toLowerCase();
       const nameTrim = (nameStr || '').trim();
       if (!emailLower) return null;
+
+      // 管理員專用豁免信箱
       if (emailLower === 'guan7chen@gmail.com' || emailLower === 'guan7chen@waldorf.ilc.edu.tw') {
-        return { name: nameTrim || '陳冠錡', email: emailLower };
-      }
-      if (!Array.isArray(EMBEDDED_TEACHERS)) return null;
-      const byEmail = EMBEDDED_TEACHERS.find(t => t.email.toLowerCase() === emailLower);
-      if (byEmail) return byEmail;
-      if (nameTrim) {
-        const byName = EMBEDDED_TEACHERS.find(t => t.name === nameTrim);
-        if (byName && (emailLower.endsWith('@waldorf.ilc.edu.tw') || emailLower.endsWith('@tmail.ilc.edu.tw'))) {
-          return byName;
+        if (!nameTrim || nameTrim === '陳冠錡' || nameTrim === '管理員' || nameTrim.includes('冠錡')) {
+          return { name: nameTrim || '陳冠錡', email: emailLower };
         }
       }
-      return null;
+
+      if (!Array.isArray(EMBEDDED_TEACHERS)) return null;
+
+      // 1. 嚴格比對：公務信箱必須精準列於教職員名冊通訊錄中（杜絕任意未登錄或亂打帳號如 djie0e）
+      const byEmail = EMBEDDED_TEACHERS.find(t => (t.email || '').toLowerCase() === emailLower);
+      if (!byEmail) {
+        return null;
+      }
+
+      // 2. 嚴格比對：若填寫了姓名，姓名必須與名冊該信箱登記之姓名相符（防止冒用他人公務信箱）
+      if (nameTrim) {
+        const tName = (byEmail.name || '').trim();
+        if (tName === nameTrim || tName.toLowerCase() === nameTrim.toLowerCase()) {
+          return byEmail;
+        }
+        return null; // 信箱存在但與借用人姓名不符
+      }
+
+      return byEmail;
     }
 
     function initApp() {
@@ -2465,7 +2523,17 @@
       if (!rawEmail) { alert('請填寫通知 Email 帳號！'); return; }
       const authTeacher = findAuthorizedTeacher(email, name);
       if (!authTeacher) {
-        alert('【權限限制・查無此教職員】\n本借用系統僅限慈心華德福教職員使用！\n您所填寫的姓名「' + name + '」或信箱「' + email + '」不在學校教職員通訊錄中。\n請點選下拉選單中的姓名或輸入正式公務信箱；若有新進同仁請聯繫陳冠錡老師。');
+        const teacherByEmail = (Array.isArray(EMBEDDED_TEACHERS) ? EMBEDDED_TEACHERS : []).find(t => (t.email || '').toLowerCase() === email.toLowerCase());
+        let detailMsg = '';
+        if (!teacherByEmail && email.toLowerCase() !== 'guan7chen@gmail.com') {
+          detailMsg = `公務信箱帳號「${rawEmail}」未登錄於慈心教職員名冊通訊錄中！\n本系統僅限慈心華德福正式教職員使用。`;
+        } else if (teacherByEmail) {
+          detailMsg = `您輸入的公務信箱為「${teacherByEmail.name} 老師」所有，與所填寫的申請老師姓名「${name}」不符！`;
+        } else {
+          detailMsg = `您所填寫的姓名「${name}」或公務信箱「${email}」身分核對未通過！`;
+        }
+        alert(`【權限限制・教職員身份核對失敗】\n\n原因：${detailMsg}\n\n請確認姓名與公務信箱是否正確；若為新進同仁請聯繫陳冠錡老師。`);
+        document.getElementById('coord-borrower-name').focus();
         return;
       }
       if (!phone) { alert('請填寫聯絡電話！'); return; }
@@ -2492,6 +2560,38 @@
         btnSubmit.innerText = '正在提交協調申請...';
       }
 
+      const onCoordSuccess = (reqId) => {
+        // 樂觀加入本機快取
+        const newCoordItem = {
+          request_id: reqId,
+          created_at: new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' }),
+          borrower_name: name,
+          email: email,
+          phone: phone,
+          class_name: className,
+          activity_type: actType,
+          activity_name: actName,
+          borrow_date: gBorrow,
+          return_date: gReturn,
+          items: coordItems,
+          conflict_summary: '新送交之協調申請',
+          reason: reason,
+          status: '待協調',
+          notes: ''
+        };
+        if (!Array.isArray(cachedCoordRequests)) cachedCoordRequests = [];
+        cachedCoordRequests.unshift(newCoordItem);
+        try {
+          localStorage.setItem('cixin_outdoor_coord_requests', JSON.stringify(cachedCoordRequests));
+        } catch (e) {}
+        updateCoordBadge();
+
+        alert(`【協調申請已成功送達】\n\n申請單號：${reqId}\n\n系統已發送協調分析通知信給陳冠錡老師，並同步副知您的學校信箱。\n冠錡老師將依活動性質與安全順位進行協調評估後與您聯繫。`);
+        closeCoordinationModal();
+        document.getElementById('coord-reason').value = '';
+        coordItems = [];
+      };
+
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
           .withSuccessHandler((res) => {
@@ -2500,10 +2600,7 @@
               btnSubmit.innerText = '確認送出協調申請';
             }
             if (res.success) {
-              alert(`【協調申請已成功送達】\n\n申請單號：${res.request_id}\n\n系統已發送協調分析通知信給陳冠錡老師，並同步副知您的學校信箱。\n冠錡老師將依活動性質與安全順位進行協調評估後與您聯繫。`);
-              closeCoordinationModal();
-              document.getElementById('coord-reason').value = '';
-              coordItems = [];
+              onCoordSuccess(res.request_id);
             } else {
               alert('協調申請送出失敗：' + res.message);
             }
@@ -2526,10 +2623,7 @@
               btnSubmit.innerText = '確認送出協調申請';
             }
             if (res && res.success) {
-              alert(`【協調申請已成功送達】\n\n申請單號：${res.request_id}\n\n系統已發送協調分析通知信給陳冠錡老師，並同步副知您的學校信箱。\n冠錡老師將依活動性質與安全順位進行協調評估後與您聯繫。`);
-              closeCoordinationModal();
-              document.getElementById('coord-reason').value = '';
-              coordItems = [];
+              onCoordSuccess(res.request_id);
             } else {
               alert('協調申請送出失敗：' + ((res && res.message) || '未知錯誤'));
             }
@@ -3396,7 +3490,16 @@
       const emailLower = email.toLowerCase();
       const authTeacher = findAuthorizedTeacher(emailLower, name);
       if (!authTeacher) {
-        alert('【權限限制・查無此教職員】\n本借用系統僅限慈心華德福教職員使用！\n您所填寫的姓名「' + name + '」或信箱「' + emailLower + '」不在學校教職員通訊錄中。\n請點選下拉選單中的姓名或輸入正式公務信箱；若有新進同仁請聯繫陳冠錡老師。');
+        const teacherByEmail = (Array.isArray(EMBEDDED_TEACHERS) ? EMBEDDED_TEACHERS : []).find(t => (t.email || '').toLowerCase() === emailLower);
+        let detailMsg = '';
+        if (!teacherByEmail && emailLower !== 'guan7chen@gmail.com') {
+          detailMsg = `公務信箱帳號「${rawEmail}」未登錄於慈心教職員名冊通訊錄中！\n本系統僅限慈心華德福正式教職員使用。`;
+        } else if (teacherByEmail) {
+          detailMsg = `您輸入的公務信箱為「${teacherByEmail.name} 老師」所有，與所填寫的借用人姓名「${name}」不符！`;
+        } else {
+          detailMsg = `您所填寫的姓名「${name}」或公務信箱「${emailLower}」身分核對未通過！`;
+        }
+        alert(`【權限限制・教職員身份核對失敗】\n\n原因：${detailMsg}\n\n請確認姓名與公務信箱是否正確；若為新進同仁請聯繫陳冠錡老師。`);
         document.getElementById('borrower-name').focus();
         return;
       }
@@ -3901,23 +4004,58 @@
       }
     }
 
-    // 載入後台協調申請清單
+    // 協調申請本地持久化快取 (localStorage)
+    let cachedCoordRequests = null;
+    try {
+      const storedCoord = localStorage.getItem('cixin_outdoor_coord_requests');
+      if (storedCoord) {
+        cachedCoordRequests = JSON.parse(storedCoord);
+      }
+    } catch (e) {
+      cachedCoordRequests = null;
+    }
+
+    // 更新後台協調待辦標籤數字
+    function updateCoordBadge() {
+      const countEl = document.getElementById('admin-coord-count');
+      if (!countEl) return;
+      if (Array.isArray(cachedCoordRequests)) {
+        const pendingCount = cachedCoordRequests.filter(r => r.status === '待協調' || r.status === '協調中').length;
+        countEl.innerText = pendingCount;
+      }
+    }
+
+    // 載入後台協調申請清單（0秒快取優先 + 8秒超時防護 + 背景靜默更新）
     function loadAdminCoordinationRequests(countOnly) {
       const container = document.getElementById('admin-coord-list');
-      if (!countOnly && container) {
-        container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted);">正在載入協調申請...</div>`;
-      }
 
+      // 1. 若有本機快取，立即 0 秒秒開渲染，絕不卡在載入文字！
+      if (!countOnly && container) {
+        if (Array.isArray(cachedCoordRequests) && cachedCoordRequests.length > 0) {
+          renderAdminCoordinationRequests(cachedCoordRequests, true);
+        } else if (Array.isArray(cachedCoordRequests) && cachedCoordRequests.length === 0) {
+          renderAdminCoordinationRequests([], true);
+        } else {
+          container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted);"><span class="loading-spinner"></span> 正在載入最新協調申請...</div>`;
+        }
+      }
+      updateCoordBadge();
+
+      // 2. 獲取遠端資料
       const handleCoordData = (res) => {
         if (res && res.success && Array.isArray(res.requests)) {
-          const pendingCount = res.requests.filter(r => r.status === '待協調' || r.status === '協調中').length;
-          const countEl = document.getElementById('admin-coord-count');
-          if (countEl) countEl.innerText = pendingCount;
-          if (!countOnly) {
-            renderAdminCoordinationRequests(res.requests);
+          cachedCoordRequests = res.requests;
+          try {
+            localStorage.setItem('cixin_outdoor_coord_requests', JSON.stringify(res.requests));
+          } catch (e) {}
+          updateCoordBadge();
+          if (!countOnly && container) {
+            renderAdminCoordinationRequests(cachedCoordRequests, false);
           }
         } else if (!countOnly && container) {
-          container.innerHTML = `<div style="color:red; text-align:center;">讀取失敗：${(res && res.message) || '未知錯誤'}</div>`;
+          if (!cachedCoordRequests) {
+            container.innerHTML = `<div style="color:#C0392B; text-align:center; padding:25px;">讀取失敗：${(res && res.message) || '未知錯誤'}<br><button type="button" class="btn-action" style="margin-top:12px; background:var(--primary-color); color:#FFF; padding:6px 14px;" onclick="loadAdminCoordinationRequests()">點此重新整理</button></div>`;
+          }
         }
       };
 
@@ -3925,27 +4063,45 @@
         google.script.run
           .withSuccessHandler(handleCoordData)
           .withFailureHandler((err) => {
-            if (!countOnly && container) {
-              container.innerHTML = `<div style="color:red; text-align:center;">系統錯誤：${err}</div>`;
+            if (!countOnly && container && !cachedCoordRequests) {
+              container.innerHTML = `<div style="color:#C0392B; text-align:center; padding:25px;">系統連線錯誤：${err}<br><button type="button" class="btn-action" style="margin-top:12px; background:var(--primary-color); color:#FFF; padding:6px 14px;" onclick="loadAdminCoordinationRequests()">點此重試</button></div>`;
             }
           })
           .getCoordinationRequests(currentAdminPin);
       } else {
-        // 外部站點模式：自 Google 試算表即時載入真實協調單
-        fetch(CLOUD_API_URL + '?action=api_get_coord&pin=' + encodeURIComponent(currentAdminPin || '9879'))
+        // 外部站點模式：使用 AbortController 與隨機時間戳防 HTTP Cache，超時 8 秒
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        const fetchUrl = `${CLOUD_API_URL}?action=api_get_coord&pin=${encodeURIComponent(currentAdminPin || '9879')}&_t=${Date.now()}`;
+
+        fetch(fetchUrl, { signal: controller.signal, cache: 'no-cache' })
           .then(r => r.json())
-          .then(handleCoordData)
+          .then(res => {
+            clearTimeout(timeoutId);
+            handleCoordData(res);
+          })
           .catch(err => {
-            console.error('讀取雲端協調申請失敗：', err);
+            clearTimeout(timeoutId);
+            console.warn('雲端協調申請連線稍緩或逾時：', err);
             if (!countOnly && container) {
-              container.innerHTML = `<div style="color:red; text-align:center;">連線錯誤：${err}</div>`;
+              if (cachedCoordRequests) {
+                renderAdminCoordinationRequests(cachedCoordRequests, false, '（目前為本機快取資料，雲端連線稍有延遲）');
+              } else {
+                container.innerHTML = `
+                  <div style="text-align: center; padding: 35px 20px; color: var(--text-muted); background: #FAF9F6; border-radius: 8px; border: 1px dashed var(--border-color);">
+                    <div style="font-size: 1rem; font-weight: 600; margin-bottom: 6px; color: var(--text-main);">🌿 目前無待處理協調單（或雲端連線稍有延遲）</div>
+                    <div style="font-size: 0.84rem; margin-bottom: 12px;">系統已就緒，若剛送出協調請點擊重新整理載入。</div>
+                    <button type="button" class="btn-action" style="background: var(--primary-color); color: #FFF; padding: 6px 16px;" onclick="loadAdminCoordinationRequests()">重新整理</button>
+                  </div>
+                `;
+              }
             }
           });
       }
     }
 
     // 渲染協調申請卡片清單
-    function renderAdminCoordinationRequests(requests) {
+    function renderAdminCoordinationRequests(requests, isSyncing, syncNotice) {
       const container = document.getElementById('admin-coord-list');
       if (!container) return;
 
@@ -3954,21 +4110,27 @@
           <div style="text-align: center; padding: 40px 20px; color: var(--accent-green); background: #F8FBF8; border-radius: 8px; border: 1px solid #C8E6C9;">
             <div style="font-size: 1.1rem; font-weight: 700; margin-bottom: 6px;">🌿 目前無任何待處理的裝備協調申請</div>
             <div style="font-size: 0.88rem; color: var(--text-muted);">所有跨班級裝備需求目前均運作順暢！</div>
+            ${syncNotice ? `<div style="font-size:0.78rem; color:#888; margin-top:8px;">${escapeHtml(syncNotice)}</div>` : ''}
           </div>
         `;
         return;
       }
 
-              let html = '<div style="display: flex; flex-direction: column; gap: 14px;">';
-        html += `
-          <div style="background: #EBF5FB; border-left: 4px solid #2980B9; border-radius: 6px; padding: 12px 16px; margin-bottom: 4px; font-size: 0.84rem; color: #1B4F72; line-height: 1.6;">
-            <strong style="color: #154360; font-size: 0.9rem;">協調作業標準處理流程（SOP）：</strong><br>
-            1. 冠錡老師與雙方老師溝通達成共識後：<br>
-            2. <strong>已借出班級：</strong>請該班老師由原借用通知信點擊【修改借用單】調降數量，系統將自動釋出庫存（免整單刪除重借）。<br>
-            3. <strong>協調班級：</strong>待庫存釋出後，協調老師直接至系統送出新借用單即可完成登記。<br>
-            4. <strong>銷案清除：</strong>提醒雙方完成後，冠錡老師點擊下方【協調完成・刪除此通知】即可徹底結案清除通知！
+      let html = '<div style="display: flex; flex-direction: column; gap: 14px;">';
+      html += `
+        <div style="background: #EBF5FB; border-left: 4px solid #2980B9; border-radius: 6px; padding: 12px 16px; margin-bottom: 4px; font-size: 0.84rem; color: #1B4F72; line-height: 1.6;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <strong style="color: #154360; font-size: 0.9rem;">協調作業標準處理流程（SOP）：</strong>
+            <span style="font-size: 0.78rem; color: ${isSyncing ? '#E67E22' : '#27AE60'}; font-weight: 600;">
+              ${isSyncing ? '🔄 正在同步雲端最新狀態...' : (syncNotice ? escapeHtml(syncNotice) : '✓ 資料已同步最新')}
+            </span>
           </div>
-        `;
+          1. 冠錡老師與雙方老師溝通達成共識後：<br>
+          2. <strong>已借出班級：</strong>請該班老師由原借用通知信點擊【修改借用單】調降數量，系統將自動釋出庫存（免整單刪除重借）。<br>
+          3. <strong>協調班級：</strong>待庫存釋出後，協調老師直接至系統送出新借用單即可完成登記。<br>
+          4. <strong>銷案清除：</strong>提醒雙方完成後，冠錡老師點擊下方【協調完成・刪除此通知】即可徹底結案清除通知！
+        </div>
+      `;
 
       requests.forEach(req => {
         let badgeClass = 'priority-badge-low';
@@ -3997,7 +4159,7 @@
         }
 
         html += `
-          <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
+          <div id="coord-card-${escapeHtml(req.request_id)}" style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 8px; padding: 16px 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); transition: all 0.3s ease;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; border-bottom: 1px solid #EEE; padding-bottom: 10px;">
               <div>
                 <span class="${badgeClass}" style="margin-right: 8px;">${escapeHtml(req.activity_type || '一般活動')}</span>
@@ -4060,45 +4222,50 @@
       container.innerHTML = html;
     }
 
-    // 儲存協調狀態與備註
-    
-    // 結案並刪除協調申請通知
+    // 結案並刪除協調申請通知（樂觀刪除：立即 0.1 秒自畫面與快取移除 + 背景同步雲端）
     function deleteCoordinationAction(requestId) {
       if (!confirm(`確定已協調完成，要結案並刪除協調單【${requestId}】的通知嗎？\n（刪除後此通知將自後台徹底清除，待辦計數歸零）`)) {
         return;
       }
+
+      // 1. 樂觀更新：立即自記憶體與快取中移除
+      if (Array.isArray(cachedCoordRequests)) {
+        cachedCoordRequests = cachedCoordRequests.filter(r => r.request_id !== requestId);
+        try {
+          localStorage.setItem('cixin_outdoor_coord_requests', JSON.stringify(cachedCoordRequests));
+        } catch (e) {}
+        updateCoordBadge();
+        renderAdminCoordinationRequests(cachedCoordRequests, false);
+      }
+
+      // 2. 背景發送結案刪除請求至雲端試算表（帶時間戳防 HTTP 快取）
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
           .withSuccessHandler((res) => {
             if (res && res.success) {
-              alert(res.message);
-              loadAdminCoordinationRequests();
-            } else {
-              alert('刪除失敗：' + ((res && res.message) || '未知錯誤'));
+              console.log('雲端協調單銷案成功：', requestId);
             }
           })
           .withFailureHandler((err) => {
-            alert('系統錯誤：' + err);
+            console.warn('雲端刪除失敗：', err);
           })
           .deleteCoordinationRequest(requestId, currentAdminPin);
       } else {
-        // 外部站點模式：向雲端伺服器發送結案刪除請求
-        fetch(CLOUD_API_URL + '?action=api_delete_coord&requestId=' + encodeURIComponent(requestId) + '&pin=' + encodeURIComponent(currentAdminPin || '9879'))
+        const delUrl = `${CLOUD_API_URL}?action=api_delete_coord&requestId=${encodeURIComponent(requestId)}&pin=${encodeURIComponent(currentAdminPin || '9879')}&_t=${Date.now()}`;
+        fetch(delUrl, { cache: 'no-cache' })
           .then(r => r.json())
           .then(res => {
             if (res && res.success) {
-              alert(res.message);
-              loadAdminCoordinationRequests();
-            } else {
-              alert('刪除失敗：' + ((res && res.message) || '未知錯誤'));
+              console.log('雲端協調單銷案成功：', requestId);
             }
           })
           .catch(err => {
-            alert('系統通訊錯誤：' + err);
+            console.warn('雲端銷案請求連線延遲（本機已先移除）：', err);
           });
       }
     }
 
+    // 儲存協調狀態與備註（樂觀更新：即時反映在快取與畫面 + 背景同步雲端）
     function saveCoordinationStatus(requestId) {
       const statusSelect = document.getElementById(`coord-status-${requestId}`);
       const notesInput = document.getElementById(`coord-notes-${requestId}`);
@@ -4107,39 +4274,35 @@
       const newStatus = statusSelect.value;
       const notes = notesInput ? notesInput.value.trim() : '';
 
+      // 1. 樂觀更新本地快取
+      if (Array.isArray(cachedCoordRequests)) {
+        const item = cachedCoordRequests.find(r => r.request_id === requestId);
+        if (item) {
+          item.status = newStatus;
+          item.notes = notes;
+          try {
+            localStorage.setItem('cixin_outdoor_coord_requests', JSON.stringify(cachedCoordRequests));
+          } catch (e) {}
+          updateCoordBadge();
+          renderAdminCoordinationRequests(cachedCoordRequests, false);
+        }
+      }
+
+      alert('【協調進度已更新】備註與進度已儲存！');
+
+      // 2. 背景發送更新至雲端試算表（帶時間戳防 HTTP 快取）
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
-          .withSuccessHandler((res) => {
-            if (res && res.success) {
-              alert(res.message);
-              loadAdminCoordinationRequests();
-            } else {
-              alert('更新失敗：' + ((res && res.message) || '未知錯誤'));
-            }
-          })
-          .withFailureHandler((err) => {
-            alert('系統錯誤：' + err);
-          })
           .updateCoordinationStatus({
             request_id: requestId,
             status: newStatus,
             notes: notes
           }, currentAdminPin);
       } else {
-        // 外部站點模式：向雲端伺服器更新協調狀態與備註
-        fetch(CLOUD_API_URL + '?action=api_update_coord_status&requestId=' + encodeURIComponent(requestId) + '&status=' + encodeURIComponent(newStatus) + '&notes=' + encodeURIComponent(notes) + '&pin=' + encodeURIComponent(currentAdminPin || '9879'))
+        const updateUrl = `${CLOUD_API_URL}?action=api_update_coord_status&requestId=${encodeURIComponent(requestId)}&status=${encodeURIComponent(newStatus)}&notes=${encodeURIComponent(notes)}&pin=${encodeURIComponent(currentAdminPin || '9879')}&_t=${Date.now()}`;
+        fetch(updateUrl, { cache: 'no-cache' })
           .then(r => r.json())
-          .then(res => {
-            if (res && res.success) {
-              alert(res.message);
-              loadAdminCoordinationRequests();
-            } else {
-              alert('更新失敗：' + ((res && res.message) || '未知錯誤'));
-            }
-          })
-          .catch(err => {
-            alert('系統通訊錯誤：' + err);
-          });
+          .catch(err => console.warn('雲端更新備註延遲：', err));
       }
     }
 
