@@ -1279,7 +1279,7 @@
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">申請老師姓名 <span style="color: var(--accent-orange);">*</span></label>
-            <input type="text" class="form-input" id="coord-borrower-name" list="teachers-datalist" placeholder="輸入或選擇老師姓名（例如：林詩閔）" autocomplete="name" oninput="handleTeacherSelect(this, 'coord-email', 'coord-name-hint')">
+            <input type="text" class="form-input" id="coord-borrower-name" placeholder="請輸入老師姓名" autocomplete="off">
             <div id="coord-name-hint" style="font-size: 0.78rem; margin-top: 4px; display: none;"></div>
           </div>
           <div class="form-group">
@@ -1292,7 +1292,7 @@
           <div class="form-group">
             <label class="form-label">通知 Email（限 @waldorf.ilc.edu.tw 學校信箱） <span style="color: var(--accent-orange);">*</span></label>
             <div class="email-input-group">
-              <input type="text" class="email-prefix-input" id="coord-email" placeholder="請輸入帳號（例如：yourname）" autocomplete="username">
+              <input type="text" class="email-prefix-input" id="coord-email" placeholder="請輸入公務信箱帳號" autocomplete="off">
               <span class="email-suffix">@waldorf.ilc.edu.tw</span>
             </div>
           </div>
@@ -1393,7 +1393,7 @@
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">借用人姓名 <span style="color: var(--accent-orange);">*</span></label>
-            <input type="text" class="form-input" id="borrower-name" list="teachers-datalist" placeholder="輸入或選擇老師姓名（例如：林詩閔）" autocomplete="name" oninput="handleTeacherSelect(this, 'borrower-email', 'borrower-name-hint')">
+            <input type="text" class="form-input" id="borrower-name" placeholder="請輸入借用人姓名" autocomplete="off">
             <div id="borrower-name-hint" style="font-size: 0.78rem; margin-top: 4px; display: none;"></div>
           </div>
           <div class="form-group">
@@ -1406,7 +1406,7 @@
           <div class="form-group">
             <label class="form-label">通知 Email（限 @waldorf.ilc.edu.tw 學校信箱） <span style="color: var(--accent-orange);">*</span></label>
             <div class="email-input-group">
-              <input type="text" class="email-prefix-input" id="borrower-email" placeholder="請輸入帳號（例如：yourname）" autocomplete="username">
+              <input type="text" class="email-prefix-input" id="borrower-email" placeholder="請輸入公務信箱帳號" autocomplete="off">
               <span class="email-suffix">@waldorf.ilc.edu.tw</span>
             </div>
             <div style="font-size: 0.76rem; color: var(--text-muted); margin-top: 3px;">系統將寄送借用確認信與 A4 檢核單至此學校信箱</div>
@@ -1464,7 +1464,7 @@
         <div class="form-group">
           <label class="form-label">申請人 Email（限 @waldorf.ilc.edu.tw 學校信箱） <span style="color: var(--accent-orange);">*</span></label>
           <div class="email-input-group">
-            <input type="text" class="email-prefix-input" id="lookup-email" placeholder="請輸入帳號（例如：yourname）" autocomplete="username">
+            <input type="text" class="email-prefix-input" id="lookup-email" placeholder="請輸入公務信箱帳號" autocomplete="off">
             <span class="email-suffix">@waldorf.ilc.edu.tw</span>
           </div>
         </div>
@@ -1750,64 +1750,88 @@
       return (val + '@waldorf.ilc.edu.tw').toLowerCase();
     }
 
-    // 輔助函式：即時比對帳號輸入框與所屬教師姓名相符性
+    // 輔助函式：即時比對姓名與公務信箱帳號雙向審核相符性（不主動帶入帳號、不洩漏名冊資訊）
     function checkEmailValidationLive(emailInputId, nameInputId, hintId) {
       const emailEl = document.getElementById(emailInputId);
       const nameEl = document.getElementById(nameInputId);
       const hintEl = document.getElementById(hintId);
       if (!emailEl || !hintEl) return;
 
-      const rawVal = emailEl.value.trim();
+      const rawEmail = emailEl.value.trim();
       const nameVal = nameEl ? nameEl.value.trim() : '';
 
-      if (!rawVal) {
-        if (!nameVal) {
-          hintEl.style.display = 'none';
-        }
+      // 若兩者皆未輸入，不顯示提示
+      if (!rawEmail && !nameVal) {
+        hintEl.style.display = 'none';
         return;
       }
 
-      const fullEmail = resolveSchoolEmail(rawVal);
+      // 若僅輸入姓名，提示需輸入對應信箱帳號
+      if (!rawEmail && nameVal) {
+        hintEl.style.display = 'block';
+        hintEl.style.color = '#7A4B20';
+        hintEl.innerHTML = '請輸入對應的學校公務信箱帳號以進行身分審核。';
+        return;
+      }
+
+      // 若僅輸入信箱帳號，提示需輸入借用人姓名
+      if (rawEmail && !nameVal) {
+        hintEl.style.display = 'block';
+        hintEl.style.color = '#7A4B20';
+        hintEl.innerHTML = '請輸入借用老師姓名以進行身分審核。';
+        return;
+      }
+
+      const fullEmail = resolveSchoolEmail(rawEmail);
       const auth = findAuthorizedTeacher(fullEmail, nameVal);
 
       if (auth) {
         hintEl.style.display = 'block';
         hintEl.style.color = '#2B4C3F';
-        hintEl.innerHTML = `✓ 慈心教職員已認證：<strong>${escapeHtml(auth.name)}</strong> 老師（${escapeHtml(auth.email)}）`;
+        hintEl.innerHTML = `✓ 姓名與公務信箱核對相符（${escapeHtml(auth.name)} 老師）`;
       } else {
         hintEl.style.display = 'block';
         hintEl.style.color = '#C0392B';
-        const teacherByEmail = (Array.isArray(EMBEDDED_TEACHERS) ? EMBEDDED_TEACHERS : []).find(t => (t.email || '').toLowerCase() === fullEmail.toLowerCase());
-        if (teacherByEmail) {
-          hintEl.innerHTML = `⚠️ 此帳號為 <strong>${escapeHtml(teacherByEmail.name)}</strong> 老師登記信箱，與所填借用人姓名不符！`;
-        } else {
-          hintEl.innerHTML = `⚠️ 查無「${escapeHtml(rawVal)}」公務信箱帳號，請確認或由姓名下拉清單選取！`;
-        }
+        hintEl.innerHTML = `⚠️ 姓名與公務信箱核對未通過（不吻合或查無登記）`;
       }
     }
 
-    // 輔助函式：綁定帳號輸入框自動清理完整貼上的學校尾綴並即時校驗
+    // 輔助函式：綁定姓名與帳號輸入框即時雙向校驗，不自動帶入、自動清理完整貼上的學校尾綴
     function setupEmailPrefixInputs() {
-      const emailConfigs = [
-        { id: 'borrower-email', nameId: 'borrower-name', hintId: 'borrower-name-hint' },
-        { id: 'coord-email', nameId: 'coord-borrower-name', hintId: 'coord-name-hint' },
-        { id: 'lookup-email', nameId: null, hintId: null }
+      const configs = [
+        { emailId: 'borrower-email', nameId: 'borrower-name', hintId: 'borrower-name-hint' },
+        { emailId: 'coord-email', nameId: 'coord-borrower-name', hintId: 'coord-name-hint' },
+        { emailId: 'lookup-email', nameId: null, hintId: null }
       ];
 
-      emailConfigs.forEach(cfg => {
-        const el = document.getElementById(cfg.id);
-        if (!el) return;
-        const handler = function() {
-          let v = el.value.trim();
-          if (v.toLowerCase().endsWith('@waldorf.ilc.edu.tw')) {
-            el.value = v.substring(0, v.length - '@waldorf.ilc.edu.tw'.length).trim();
+      configs.forEach(cfg => {
+        const emailEl = document.getElementById(cfg.emailId);
+        const nameEl = cfg.nameId ? document.getElementById(cfg.nameId) : null;
+
+        const emailHandler = function() {
+          if (emailEl) {
+            let v = emailEl.value.trim();
+            if (v.toLowerCase().endsWith('@waldorf.ilc.edu.tw')) {
+              emailEl.value = v.substring(0, v.length - '@waldorf.ilc.edu.tw'.length).trim();
+            }
           }
           if (cfg.nameId && cfg.hintId) {
-            checkEmailValidationLive(cfg.id, cfg.nameId, cfg.hintId);
+            checkEmailValidationLive(cfg.emailId, cfg.nameId, cfg.hintId);
           }
         };
-        el.addEventListener('input', handler);
-        el.addEventListener('blur', handler);
+
+        if (emailEl) {
+          emailEl.addEventListener('input', emailHandler);
+          emailEl.addEventListener('blur', emailHandler);
+        }
+
+        if (nameEl && cfg.hintId) {
+          const nameHandler = function() {
+            checkEmailValidationLive(cfg.emailId, cfg.nameId, cfg.hintId);
+          };
+          nameEl.addEventListener('input', nameHandler);
+          nameEl.addEventListener('blur', nameHandler);
+        }
       });
     }
 
@@ -1861,83 +1885,38 @@
     }
 
     
-    // 慈心教職員名冊輔助函式
-    function populateTeacherDatalist() {
-      const dl = document.getElementById('teachers-datalist');
-      if (!dl) return;
-      dl.innerHTML = '';
-      if (Array.isArray(EMBEDDED_TEACHERS)) {
-        EMBEDDED_TEACHERS.forEach(t => {
-          const opt = document.createElement('option');
-          opt.value = t.name;
-          opt.label = `${t.name}（${t.email}）`;
-          dl.appendChild(opt);
-        });
-      }
-    }
-
-    function handleTeacherSelect(inputEl, emailInputId, hintId) {
-      const val = inputEl.value.trim();
-      const emailEl = document.getElementById(emailInputId);
-      const hintEl = document.getElementById(hintId);
-      if (!val) {
-        if (hintEl) hintEl.style.display = 'none';
-        return;
-      }
-      const teacher = (Array.isArray(EMBEDDED_TEACHERS) ? EMBEDDED_TEACHERS : []).find(t => t.name === val);
-      if (teacher && emailEl) {
-        let email = teacher.email;
-        if (email.toLowerCase().endsWith('@waldorf.ilc.edu.tw')) {
-          emailEl.value = email.substring(0, email.length - '@waldorf.ilc.edu.tw'.length);
-        } else {
-          emailEl.value = email;
-        }
-        if (hintEl) {
-          hintEl.style.display = 'block';
-          hintEl.style.color = '#2B4C3F';
-          hintEl.innerHTML = `✓ 慈心教職員已認證：<strong>${escapeHtml(teacher.name)}</strong> 老師（${escapeHtml(teacher.email)}）`;
-        }
-      } else {
-        if (hintEl) hintEl.style.display = 'none';
-      }
-    }
-
+    // 慈心教職員身分雙向審核函式（嚴格要求姓名與公務信箱雙向匹配，防止外人冒用或自動帶入）
     function findAuthorizedTeacher(emailStr, nameStr) {
       const emailLower = (emailStr || '').trim().toLowerCase();
       const nameTrim = (nameStr || '').trim();
-      if (!emailLower) return null;
+      if (!emailLower || !nameTrim) return null;
 
       // 管理員專用豁免信箱
       if (emailLower === 'guan7chen@gmail.com' || emailLower === 'guan7chen@waldorf.ilc.edu.tw') {
-        if (!nameTrim || nameTrim === '陳冠錡' || nameTrim === '管理員' || nameTrim.includes('冠錡')) {
-          return { name: nameTrim || '陳冠錡', email: emailLower };
+        if (nameTrim === '陳冠錡' || nameTrim === '管理員' || nameTrim.includes('冠錡')) {
+          return { name: nameTrim, email: emailLower };
         }
+        return null;
       }
 
       if (!Array.isArray(EMBEDDED_TEACHERS)) return null;
 
-      // 1. 嚴格比對：公務信箱必須精準列於教職員名冊通訊錄中（杜絕任意未登錄或亂打帳號如 djie0e）
+      // 嚴格雙向比對：公務信箱必須精準列於教職員名冊通訊錄中，且登記姓名必須與所填姓名相符
       const byEmail = EMBEDDED_TEACHERS.find(t => (t.email || '').toLowerCase() === emailLower);
       if (!byEmail) {
         return null;
       }
 
-      // 2. 嚴格比對：若填寫了姓名，姓名必須與名冊該信箱登記之姓名相符（防止冒用他人公務信箱）
-      if (nameTrim) {
-        const tName = (byEmail.name || '').trim();
-        if (tName === nameTrim || tName.toLowerCase() === nameTrim.toLowerCase()) {
-          return byEmail;
-        }
-        return null; // 信箱存在但與借用人姓名不符
+      const tName = (byEmail.name || '').trim();
+      if (tName === nameTrim || tName.toLowerCase() === nameTrim.toLowerCase()) {
+        return byEmail;
       }
-
-      return byEmail;
+      return null;
     }
 
     function initApp() {
       cleanAppUrlParams(); // 第一時間清除網址列參數
       setupEmailPrefixInputs();
-      populateTeacherDatalist();
       // 設定預設借還日期（今日起算至第 3 天，共 4 天 3 夜）
       const today = new Date();
       const returnDay = new Date();
@@ -2523,16 +2502,7 @@
       if (!rawEmail) { alert('請填寫通知 Email 帳號！'); return; }
       const authTeacher = findAuthorizedTeacher(email, name);
       if (!authTeacher) {
-        const teacherByEmail = (Array.isArray(EMBEDDED_TEACHERS) ? EMBEDDED_TEACHERS : []).find(t => (t.email || '').toLowerCase() === email.toLowerCase());
-        let detailMsg = '';
-        if (!teacherByEmail && email.toLowerCase() !== 'guan7chen@gmail.com') {
-          detailMsg = `公務信箱帳號「${rawEmail}」未登錄於慈心教職員名冊通訊錄中！\n本系統僅限慈心華德福正式教職員使用。`;
-        } else if (teacherByEmail) {
-          detailMsg = `您輸入的公務信箱為「${teacherByEmail.name} 老師」所有，與所填寫的申請老師姓名「${name}」不符！`;
-        } else {
-          detailMsg = `您所填寫的姓名「${name}」或公務信箱「${email}」身分核對未通過！`;
-        }
-        alert(`【權限限制・教職員身份核對失敗】\n\n原因：${detailMsg}\n\n請確認姓名與公務信箱是否正確；若為新進同仁請聯繫陳冠錡老師。`);
+        alert('【身分審核未通過】\n\n您所填寫的「申請老師姓名」與「公務信箱帳號」核對不吻合或未登記於教職員通訊錄中。\n\n本系統僅限慈心華德福正式教職員本人申請，並以姓名與信箱雙向核對作為審核機制。請確認姓名與信箱輸入是否正確；若為新進同仁請聯繫陳冠錡老師。');
         document.getElementById('coord-borrower-name').focus();
         return;
       }
@@ -3508,16 +3478,7 @@
       const emailLower = email.toLowerCase();
       const authTeacher = findAuthorizedTeacher(emailLower, name);
       if (!authTeacher) {
-        const teacherByEmail = (Array.isArray(EMBEDDED_TEACHERS) ? EMBEDDED_TEACHERS : []).find(t => (t.email || '').toLowerCase() === emailLower);
-        let detailMsg = '';
-        if (!teacherByEmail && emailLower !== 'guan7chen@gmail.com') {
-          detailMsg = `公務信箱帳號「${rawEmail}」未登錄於慈心教職員名冊通訊錄中！\n本系統僅限慈心華德福正式教職員使用。`;
-        } else if (teacherByEmail) {
-          detailMsg = `您輸入的公務信箱為「${teacherByEmail.name} 老師」所有，與所填寫的借用人姓名「${name}」不符！`;
-        } else {
-          detailMsg = `您所填寫的姓名「${name}」或公務信箱「${emailLower}」身分核對未通過！`;
-        }
-        alert(`【權限限制・教職員身份核對失敗】\n\n原因：${detailMsg}\n\n請確認姓名與公務信箱是否正確；若為新進同仁請聯繫陳冠錡老師。`);
+        alert('【身分審核未通過】\n\n您所填寫的「借用人姓名」與「公務信箱帳號」核對不吻合或未登記於教職員通訊錄中。\n\n本系統僅限慈心華德福正式教職員本人借用，並以姓名與信箱雙向核對作為審核機制，避免外人冒用導致裝備可借用數量異常。\n\n請確認姓名與信箱輸入是否正確；若為新進同仁請聯繫陳冠錡老師。');
         document.getElementById('borrower-name').focus();
         return;
       }
@@ -4572,7 +4533,5 @@
       initApp();
     }
   </script>
-  <!-- 慈心教職員名冊 datalist -->
-  <datalist id="teachers-datalist"></datalist>
 </body>
 </html>
