@@ -2171,35 +2171,58 @@
           })
           .getActiveOrdersForSchedule();
       } else {
-        // 離線展示用測試訂單與本地儲存訂單
-        let localOrders = [];
-        try {
-          const raw = localStorage.getItem('cixin_outdoor_orders');
-          if (raw) localOrders = JSON.parse(raw);
-        } catch (e) {}
+        // 外部站點模式：優先向雲端 Google Apps Script 獲取即時借出與預約排程
+        const fetchUrl = `${CLOUD_API_URL}?action=api_get_active_orders&_t=${Date.now()}`;
+        fetch(fetchUrl)
+          .then(r => r.json())
+          .then(res => {
+            if (res && res.orders && Array.isArray(res.orders)) {
+              activeOrdersData = res.orders;
+              try {
+                localStorage.setItem('cixin_outdoor_orders', JSON.stringify(activeOrdersData));
+              } catch (e) {}
+              recomputeRangeAvailability();
+              renderEquipmentCards();
+            } else {
+              fallbackLocalOrders();
+            }
+          })
+          .catch(err => {
+            console.warn('雲端排程連線逾時，降級使用本地快取：', err);
+            fallbackLocalOrders();
+          });
 
-        const defaultOrders = [
-          {
-            order_id: 'LOAN-20261001-001',
-            borrower_name: '李老師',
-            activity_name: '8A晴光班桃源谷體訓',
-            borrow_date: '2026-10-01',
-            return_date: '2026-10-05',
-            status: '已預約',
-            items: [
-              { id: 'EQ-001', name: '蜘蛛爐（藍袋組）', qty: 2 },
-              { id: 'EQ-006', name: '折疊鋁合金擋風板', qty: 2 }
-            ]
+        function fallbackLocalOrders() {
+          let localOrders = [];
+          try {
+            const raw = localStorage.getItem('cixin_outdoor_orders');
+            if (raw) localOrders = JSON.parse(raw);
+          } catch (e) {}
+
+          const defaultOrders = [
+            {
+              order_id: 'LOAN-20261001-001',
+              borrower_name: '李老師',
+              activity_name: '8A晴光班桃源谷體訓',
+              borrow_date: '2026-10-01',
+              return_date: '2026-10-05',
+              status: '已預約',
+              items: [
+                { id: 'EQ-001', name: '蜘蛛爐（藍袋組）', qty: 2 },
+                { id: 'EQ-006', name: '折疊鋁合金擋風板', qty: 2 }
+              ]
+            }
+          ];
+
+          const orderMap = {};
+          defaultOrders.forEach(o => { orderMap[o.order_id] = o; });
+          if (Array.isArray(localOrders)) {
+            localOrders.forEach(o => { orderMap[o.order_id] = o; });
           }
-        ];
-
-        const orderMap = {};
-        defaultOrders.forEach(o => { orderMap[o.order_id] = o; });
-        if (Array.isArray(localOrders)) {
-          localOrders.forEach(o => { orderMap[o.order_id] = o; });
+          activeOrdersData = Object.values(orderMap);
+          recomputeRangeAvailability();
+          renderEquipmentCards();
         }
-        activeOrdersData = Object.values(orderMap);
-        recomputeRangeAvailability();
       }
     }
 
@@ -2660,6 +2683,43 @@
             console.warn('背景同步試算表借用數量失敗，維持本地資料：', err);
           })
           .getInventory();
+      } else {
+        // 外部站點模式：非同步請求雲端最新在庫數量
+        fetch(`${CLOUD_API_URL}?action=api_get_inventory&_t=${Date.now()}`)
+          .then(r => r.json())
+          .then(res => {
+            if (res && res.success && Array.isArray(res.items) && res.items.length > 0) {
+              const serverMap = {};
+              res.items.forEach(s => { if (s && s.id) serverMap[s.id] = s; });
+
+              inventoryData = EMBEDDED_INVENTORY.map(localItem => {
+                const remote = serverMap[localItem.id];
+                if (remote) {
+                  const total = (typeof remote.total_qty === 'number' && remote.total_qty >= 0) ? remote.total_qty : localItem.total_qty;
+                  const borrowed = (typeof remote.borrowed_qty === 'number' && remote.borrowed_qty >= 0) ? remote.borrowed_qty : 0;
+                  return {
+                    ...localItem,
+                    total_qty: total,
+                    borrowed_qty: borrowed,
+                    available_qty: Math.max(0, total - borrowed),
+                    weight: (remote.weight && remote.weight.trim()) ? remote.weight : (localItem.weight || ''),
+                    dimensions: (remote.dimensions && remote.dimensions.trim()) ? remote.dimensions : (localItem.dimensions || '')
+                  };
+                }
+                return localItem;
+              });
+
+              const embeddedIds = new Set(EMBEDDED_INVENTORY.map(it => it.id));
+              const extraItems = res.items.filter(it => it && it.id && !embeddedIds.has(it.id));
+              if (extraItems.length > 0) {
+                inventoryData = [...inventoryData, ...extraItems];
+              }
+
+              recomputeRangeAvailability();
+              renderEquipmentCards();
+            }
+          })
+          .catch(err => console.warn('雲端庫存非同步同步略過：', err));
       }
     }
 
@@ -3784,9 +3844,31 @@
           })
           .getOrders('借出中', currentAdminPin);
       } else {
-        // 獨立站點模式：讀取所有尚未歸還之活躍借用單
-        const pending = (activeOrdersData || []).filter(o => o.status !== '已全部歸還');
-        renderAdminOrders(pending);
+        // 獨立站點模式：透過雲端 API 拉取即時借用單
+        const pin = currentAdminPin || '9879';
+        const fetchUrl = `${CLOUD_API_URL}?action=api_get_orders&pin=${encodeURIComponent(pin)}&status=all&_t=${Date.now()}`;
+        fetch(fetchUrl)
+          .then(r => r.json())
+          .then(res => {
+            if (res && res.orders) {
+              const pending = res.orders.filter(o => o.status !== '已全部歸還');
+              activeOrdersData = pending;
+              try {
+                localStorage.setItem('cixin_outdoor_orders', JSON.stringify(activeOrdersData));
+              } catch (e) {}
+              renderAdminOrders(pending);
+            } else if (res && res.message) {
+              container.innerHTML = `<div style="color:red; text-align:center; padding:30px;">讀取失敗：${escapeHtml(res.message)}</div>`;
+            } else {
+              const pending = (activeOrdersData || []).filter(o => o.status !== '已全部歸還');
+              renderAdminOrders(pending);
+            }
+          })
+          .catch(err => {
+            console.error('雲端讀取訂單失敗：', err);
+            const pending = (activeOrdersData || []).filter(o => o.status !== '已全部歸還');
+            renderAdminOrders(pending);
+          });
       }
     }
 
@@ -3939,22 +4021,37 @@
           })
           .returnOrder(orderId, notes, pin);
       } else {
-        // 獨立站點模式：更新本地訂單狀態與即時釋放庫存
-        if (Array.isArray(activeOrdersData)) {
-          const target = activeOrdersData.find(o => o.order_id === orderId);
-          if (target) {
-            target.status = '已全部歸還';
-            target.return_notes = notes;
-            target.returned_at = new Date().toISOString();
-          }
-          try {
-            localStorage.setItem('cixin_outdoor_orders', JSON.stringify(activeOrdersData));
-          } catch (e) {}
-        }
-        alert(`【點收歸還成功】\n單號：${orderId}\n實體裝備已完成點收入庫，庫存額度已即時恢復！\n歸還確認信已同步發送至管理者信箱 (guan7chen@gmail.com) 與借用人學校信箱。`);
-        loadAdminOrders();
-        recomputeRangeAvailability();
-        renderEquipmentCards();
+        // 獨立站點模式：透過 API 真正更新雲端試算表狀態與發送雙向通知信
+        const returnUrl = `${CLOUD_API_URL}?action=api_return&orderId=${encodeURIComponent(orderId)}&notes=${encodeURIComponent(notes)}&pin=${encodeURIComponent(pin)}&_t=${Date.now()}`;
+        fetch(returnUrl)
+          .then(r => r.json())
+          .then(res => {
+            if (res && res.success) {
+              alert(res.message || `【點收歸還成功】\n單號：${orderId}\n實體裝備已完成點收入庫，庫存額度已即時恢復！\n歸還確認信已同步發送至管理者信箱 (guan7chen@gmail.com) 與借用人學校信箱。`);
+            } else {
+              alert('歸還提示：' + (res ? res.message : '已送出請求'));
+            }
+            loadAdminOrders();
+            loadActiveOrdersSchedule();
+          })
+          .catch(err => {
+            console.error('雲端歸還請求失敗，使用本機狀態：', err);
+            if (Array.isArray(activeOrdersData)) {
+              const target = activeOrdersData.find(o => o.order_id === orderId);
+              if (target) {
+                target.status = '已全部歸還';
+                target.return_notes = notes;
+                target.returned_at = new Date().toISOString();
+              }
+              try {
+                localStorage.setItem('cixin_outdoor_orders', JSON.stringify(activeOrdersData));
+              } catch (e) {}
+            }
+            alert(`【點收歸還完成（離線模式）】\n單號：${orderId}`);
+            loadAdminOrders();
+            recomputeRangeAvailability();
+            renderEquipmentCards();
+          });
       }
     }
 
@@ -4461,28 +4558,47 @@
           })
           .getOrderDetails(orderId);
       } else {
-        let found = null;
-        if (Array.isArray(activeOrdersData)) {
-          found = activeOrdersData.find(o => o.order_id === orderId);
+        // 獨立站點模式：優先向雲端 API 獲取該單據完整明細（含品項安全規範）
+        const detailUrl = `${CLOUD_API_URL}?action=api_get_order_details&orderId=${encodeURIComponent(orderId)}&_t=${Date.now()}`;
+        fetch(detailUrl)
+          .then(r => r.json())
+          .then(res => {
+            if (res && res.success && res.order) {
+              currentCompletedOrder = res.order;
+              populatePrintView(res.order);
+              document.getElementById('app-view').style.display = 'none';
+              document.getElementById('print-layout').style.display = 'block';
+              window.scrollTo(0, 0);
+            } else {
+              renderLocalOrderSheet();
+            }
+          })
+          .catch(err => {
+            console.warn('雲端載入檢核單逾時，使用本地快取：', err);
+            renderLocalOrderSheet();
+          });
+
+        function renderLocalOrderSheet() {
+          let found = null;
+          if (Array.isArray(activeOrdersData)) {
+            found = activeOrdersData.find(o => o.order_id === orderId);
+          }
+          const orderToView = found || {
+            order_id: orderId,
+            borrower_name: '借用人',
+            activity_name: '戶外活動',
+            email: '',
+            phone: '',
+            borrow_date: '',
+            return_date: '',
+            items: []
+          };
+          currentCompletedOrder = orderToView;
+          populatePrintView(orderToView);
+          document.getElementById('app-view').style.display = 'none';
+          document.getElementById('print-layout').style.display = 'block';
+          window.scrollTo(0, 0);
         }
-        const orderToView = found || {
-          order_id: orderId,
-          borrower_name: '李老師',
-          activity_name: '8A晴光班桃源谷體訓',
-          email: 'teacher@waldorf.ilc.edu.tw',
-          phone: '0912-345678',
-          borrow_date: '2026-10-01',
-          return_date: '2026-10-05',
-          items: [
-            { id: 'EQ-001', name: '蜘蛛爐（藍袋組）', qty: 2, category: '炊事裝備', inspection: '1. 檢查金屬導管。\n2. 接頭 O-Ring 完好。', safety: '火等瓦斯，絕不讓瓦斯等火。', clean: '冷卻後拆罐，擦淨油垢。' },
-            { id: 'EQ-006', name: '折疊鋁合金擋風板', qty: 2, category: '炊事裝備', inspection: '鉸鏈插銷完整。', safety: '離瓦斯罐15cm以上。', clean: '擦除油煙，折疊入盒。' }
-          ]
-        };
-        currentCompletedOrder = orderToView;
-        populatePrintView(orderToView);
-        document.getElementById('app-view').style.display = 'none';
-        document.getElementById('print-layout').style.display = 'block';
-        window.scrollTo(0, 0);
       }
     }
 
