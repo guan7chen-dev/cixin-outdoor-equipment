@@ -3937,7 +3937,8 @@
             <td>${statusBadge}</td>
             <td style="white-space: nowrap;">
               <button class="btn-action btn-print" style="margin-bottom: 4px; padding: 4px 8px; font-size: 0.8rem;" onclick="viewOrderSheet('${ord.order_id}')">A4 檢核單</button><br>
-              <button class="btn-action btn-return" style="padding: 4px 8px; font-size: 0.8rem;" onclick="handleReturnClick('${ord.order_id}')">點收歸還</button>
+              <button class="btn-action btn-return" style="margin-bottom: 4px; padding: 4px 8px; font-size: 0.8rem;" onclick="handleReturnClick('${ord.order_id}')">點收歸還</button><br>
+              <button class="btn-action" style="padding: 4px 8px; font-size: 0.8rem; background: #FFF5F5; color: #C53030; border: 1px solid #FEB2B2; cursor: pointer; border-radius: 4px;" onclick="handleDeleteOrderClick('${ord.order_id}', '${escapeHtml(ord.borrower_name)}')">刪除單據</button>
             </td>
           </tr>
         `;
@@ -4048,6 +4049,70 @@
               } catch (e) {}
             }
             alert(`【點收歸還完成（離線模式）】\n單號：${orderId}`);
+            loadAdminOrders();
+            recomputeRangeAvailability();
+            renderEquipmentCards();
+          });
+      }
+    }
+
+    // 處理管理員手動刪除訂單（測試單或錯誤單據）
+    function handleDeleteOrderClick(orderId, borrowerName) {
+      if (!currentAdminPin) {
+        alert('請先登入後台！');
+        return;
+      }
+
+      const promptMsg = `【確認永久刪除借用單】\n\n單號：${orderId}\n借用人：${borrowerName || '未知'}\n\n說明：若此單為測試單或填寫錯誤，刪除後將自試算表永久移除，並立即釋放該單佔用的所有裝備庫存！\n\n確定要刪除此筆借用單嗎？`;
+      if (!confirm(promptMsg)) return;
+
+      const pin = currentAdminPin || '9879';
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler((res) => {
+            if (res && res.success) {
+              alert(res.message);
+              loadAdminOrders();
+              loadActiveOrdersSchedule();
+            } else {
+              alert('刪除失敗：' + (res ? res.message : '未知原因'));
+            }
+          })
+          .withFailureHandler((err) => {
+            alert('系統錯誤：' + err);
+          })
+          .deleteOrder(orderId, pin);
+      } else {
+        // 獨立站點模式 (GitHub Pages)
+        const delUrl = `${CLOUD_API_URL}?action=api_delete_order&orderId=${encodeURIComponent(orderId)}&pin=${encodeURIComponent(pin)}&_t=${Date.now()}`;
+        fetch(delUrl)
+          .then(r => r.json())
+          .then(res => {
+            if (res && res.success) {
+              alert(res.message);
+            } else {
+              alert('刪除提示：' + (res ? res.message : '已送出請求'));
+            }
+            // 從本地快取同步移除
+            if (Array.isArray(activeOrdersData)) {
+              activeOrdersData = activeOrdersData.filter(o => o.order_id !== orderId);
+              try {
+                localStorage.setItem('cixin_outdoor_orders', JSON.stringify(activeOrdersData));
+              } catch (e) {}
+            }
+            loadAdminOrders();
+            loadActiveOrdersSchedule();
+          })
+          .catch(err => {
+            console.error('刪除請求失敗：', err);
+            if (Array.isArray(activeOrdersData)) {
+              activeOrdersData = activeOrdersData.filter(o => o.order_id !== orderId);
+              try {
+                localStorage.setItem('cixin_outdoor_orders', JSON.stringify(activeOrdersData));
+              } catch (e) {}
+            }
+            alert(`【已刪除本機紀錄】\n單號：${orderId}`);
             loadAdminOrders();
             recomputeRangeAvailability();
             renderEquipmentCards();
