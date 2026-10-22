@@ -3605,7 +3605,7 @@
               if (res.success) {
                 const editId = editingOrderId;
                 exitEditModeInternal();
-                handleLoanSuccess(editId, payload, true);
+                handleLoanSuccess(editId, payload, true, false);
               } else {
                 alert('修改失敗：' + res.message);
               }
@@ -3622,7 +3622,7 @@
               btn.innerText = origBtnText;
               btn.disabled = false;
               if (res.success) {
-                handleLoanSuccess(res.order_id, payload, false);
+                handleLoanSuccess(res.order_id, payload, false, false);
               } else {
                 alert('提交失敗：' + res.message);
               }
@@ -3647,7 +3647,7 @@
               if (res && res.success) {
                 const editId = editingOrderId;
                 exitEditModeInternal();
-                handleLoanSuccess(editId, payload, true);
+                handleLoanSuccess(editId, payload, true, false);
               } else {
                 alert('修改失敗：' + (res && res.message ? res.message : '系統驗證未通過'));
               }
@@ -3658,7 +3658,7 @@
               btn.disabled = false;
               const editId = editingOrderId;
               exitEditModeInternal();
-              handleLoanSuccess(editId, payload, true);
+              handleLoanSuccess(editId, payload, true, true);
             });
         } else {
           const getUrl = `${CLOUD_API_URL}?action=api_submit&payload=${encodeURIComponent(JSON.stringify(payload))}&_t=${Date.now()}`;
@@ -3668,7 +3668,7 @@
               btn.innerText = origBtnText;
               btn.disabled = false;
               if (res && res.success && res.order_id) {
-                handleLoanSuccess(res.order_id, payload, false);
+                handleLoanSuccess(res.order_id, payload, false, false);
               } else {
                 alert('提交借用單失敗：' + (res && res.message ? res.message : '系統錯誤'));
               }
@@ -3684,13 +3684,13 @@
                 seqNum = todayOrders.length + 1;
               }
               const fakeOrderId = todayPrefix + '-' + String(seqNum).padStart(3, '0');
-              handleLoanSuccess(fakeOrderId, payload, false);
+              handleLoanSuccess(fakeOrderId, payload, false, true);
             });
         }
       }
     }
 
-    function handleLoanSuccess(orderId, payload, isEdit) {
+    function handleLoanSuccess(orderId, payload, isEdit, needBackgroundSync) {
       try {
         if (window.history && window.history.replaceState) {
           window.history.replaceState({}, document.title, window.location.pathname);
@@ -3730,14 +3730,16 @@
       cart = {};
       renderEquipmentCards();
 
-      // 觸發雲端試算表登記與雙向通知信發送（借用人 + 管理者 guan7chen@gmail.com）
-      const cloudAction = isEdit ? 'updateLoan' : 'submitLoan';
-      syncOrderToCloud(cloudAction, {
-        payload: {
-          ...payload,
-          order_id: orderId
-        }
-      });
+      // 僅在離線備用模式下才觸發背景 syncOrderToCloud；若已成功透過 API 送達雲端，嚴禁重複呼叫
+      if (needBackgroundSync) {
+        const cloudAction = isEdit ? 'updateLoan' : 'submitLoan';
+        syncOrderToCloud(cloudAction, {
+          payload: {
+            ...payload,
+            order_id: orderId
+          }
+        });
+      }
 
       document.getElementById('success-order-id').innerText = orderId;
       const titleEl = document.getElementById('success-modal-title');
